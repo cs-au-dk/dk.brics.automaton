@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="dk.brics.automaton" default="all" basedir=".">
+
+	<property name="project" value="automaton" />
+	<property name="version" value="1.11" />
+	<property name="release" value="8" />
+
+	<property name="optimize" value="on" />
+	<property name="debug" value="off" />
+
+	<property name="public" value="${user.home}/public_html/${project}"/>
+
+	<target name="all" depends="jar,doc" />
+
+	<target name="compile">
+		<mkdir dir="build" />
+		<javac srcdir="src" destdir="build" source="1.5" target="1.5" optimize="${optimize}" debug="${debug}" />
+	</target>
+
+	<target name="jar" depends="compile,datatypes">
+		<mkdir dir="dist" />
+		<jar jarfile="dist/${project}.jar" basedir="build" includes="dk/**/*.class,*.aut" />
+	</target>
+
+	<target name="clean">
+		<delete dir="build" />
+		<delete dir="doc" />
+		<delete dir="dist" />
+	</target>
+
+	<dependset>
+		<srcfilelist dir="src/dk/brics/automaton" files="Datatypes.java"/>
+		<srcfilelist dir="src" files="Unicode.txt"/>
+		<targetfileset dir="build" includes="*.aut"/>
+	</dependset>
+
+	<target name="datatypes" depends="compile">
+		<java classname="dk.brics.automaton.Datatypes" classpath="build">
+			<sysproperty key="dk.brics.automaton.datatypes" value="build"/>
+		</java>
+	</target>
+	
+	<target name="tgz" depends="clean,all">
+		<property name="dir" value="${project}-${version}" />
+		<mkdir dir="${dir}" />
+		<copy todir="${dir}">
+			<fileset dir="." includes="README,COPYING,INSTALL,ChangeLog,Makefile,build.xml" />
+		</copy>
+		<copy file="dist/${project}.jar" todir="${dir}/dist" />
+		<mkdir dir="${dir}/doc" />
+		<copy todir="${dir}/doc">
+			<fileset dir="doc" />
+		</copy>
+		<mkdir dir="${dir}/src" />
+		<copy todir="${dir}/src">
+			<fileset dir="src" includes="dk/brics/automaton/*.*,*.txt" excludes="**/*.class" />
+		</copy>
+		<tar tarfile="${dir}-${release}.tar" basedir="." includes="${dir}/**" />
+		<gzip zipfile="${dir}-${release}.tar.gz" src="${dir}-${release}.tar" />
+		<delete file="${dir}-${release}.tar" />
+		<delete dir="${dir}" />
+	</target>
+
+	<target name="doc" depends="jar">
+		<mkdir dir="doc" />
+		<javadoc packagenames="dk.brics.automaton" 
+			sourcepath="src" 
+			destdir="doc" 
+			nodeprecated="true" 
+			author="true" 
+			notree="true" 
+			nohelp="true" 
+			windowtitle="dk.brics.automaton">
+			<doctitle><![CDATA[dk.brics.automaton<br>API Specification]]></doctitle>
+			<bottom><![CDATA[<i> Copyright &#169; 2001-2011 Anders M&oslash;ller. </i>]]></bottom>
+			<link href="http://download.oracle.com/javase/1.5.0/docs/api/" />
+		</javadoc>
+	</target>
+
+	<target name="publish" depends="tgz">
+		<delete dir="${public}/doc" />
+		<mkdir dir="${public}/doc" />
+		<copy todir="${public}/doc">
+			<fileset dir="doc" />
+		</copy>
+		<copy file="dist/${project}.jar" todir="${public}" />
+		<copy file="${project}-${version}-${release}.tar.gz" todir="${public}" />
+		<copy file="ChangeLog" todir="${public}" />
+		<chmod dir="${public}" perm="go+r" includes="doc/**,doc,${project}.jar,*.tar.gz,ChangeLog" type="both" />
+		<chmod dir="${public}" perm="go+x" includes="doc/**,doc" type="dir" />
+	</target>
+
+</project>
