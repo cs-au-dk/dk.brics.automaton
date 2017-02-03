@@ -322,38 +322,38 @@ public class RegExp {
 			findLeaves(exp1, Kind.REGEXP_UNION, list, automata, automaton_provider, minimize);
 			findLeaves(exp2, Kind.REGEXP_UNION, list, automata, automaton_provider, minimize);
 			a = BasicOperations.union(list);
-			a.minimize();
+			if (minimize) { a.minimize(); }
 			break;
 		case REGEXP_CONCATENATION:
 			list = new ArrayList<Automaton>();
 			findLeaves(exp1, Kind.REGEXP_CONCATENATION, list, automata, automaton_provider, minimize);
 			findLeaves(exp2, Kind.REGEXP_CONCATENATION, list, automata, automaton_provider, minimize);
 			a = BasicOperations.concatenate(list);
-			a.minimize();
+			if (minimize) { a.minimize(); }
 			break;
 		case REGEXP_INTERSECTION:
 			a = exp1.toAutomaton(automata, automaton_provider, minimize).intersection(exp2.toAutomaton(automata, automaton_provider, minimize));
-			a.minimize();
+			if (minimize) { a.minimize(); }
 			break;
 		case REGEXP_OPTIONAL:
 			a = exp1.toAutomaton(automata, automaton_provider, minimize).optional();
-			a.minimize();
+			if (minimize) { a.minimize(); }
 			break;
 		case REGEXP_REPEAT:
 			a = exp1.toAutomaton(automata, automaton_provider, minimize).repeat();
-			a.minimize();
+			if (minimize) { a.minimize(); }
 			break;
 		case REGEXP_REPEAT_MIN:
 			a = exp1.toAutomaton(automata, automaton_provider, minimize).repeat(min);
-			a.minimize();
+			if (minimize) { a.minimize(); }
 			break;
 		case REGEXP_REPEAT_MINMAX:
 			a = exp1.toAutomaton(automata, automaton_provider, minimize).repeat(min, max);
-			a.minimize();
+			if (minimize) { a.minimize(); }
 			break;
 		case REGEXP_COMPLEMENT:
 			a = exp1.toAutomaton(automata, automaton_provider, minimize).complement();
-			a.minimize();
+			if (minimize) { a.minimize(); }
 			break;
 		case REGEXP_CHAR:
 			a = BasicAutomata.makeChar(c);
