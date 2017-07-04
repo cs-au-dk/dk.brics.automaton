@@ -1,7 +1,7 @@
 /*
  * dk.brics.automaton
  * 
- * Copyright (c) 2001-2011 Anders Moeller
+ * Copyright (c) 2001-2017 Anders Moeller
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -128,8 +128,7 @@ public class State implements Serializable, Comparable<State> {
 	void addEpsilon(State to) {
 		if (to.accept)
 			accept = true;
-		for (Transition t : to.transitions)
-			transitions.add(t);
+		transitions.addAll(to.transitions);
 	}
 	
 	/** Returns transitions sorted by (min, reverse max, to) or (to, min, reverse max) */

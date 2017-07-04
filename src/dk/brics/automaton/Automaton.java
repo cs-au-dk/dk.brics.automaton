@@ -1,7 +1,7 @@
 /*
  * dk.brics.automaton
  * 
- * Copyright (c) 2001-2011 Anders Moeller
+ * Copyright (c) 2001-2017 Anders Moeller
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -95,6 +95,12 @@ public class Automaton implements Serializable, Cloneable {
 	 * @see #setMinimization(int)
 	 */
 	public static final int MINIMIZE_HOPCROFT = 2;
+
+	/**
+	 * Minimize using Valmari's O(n + m log m) algorithm.
+	 * @see #setMinimization(int)
+	 */
+	public static final int MINIMIZE_VALMARI = 3;
 	
 	/** Selects minimization algorithm (default: <code>MINIMIZE_HOPCROFT</code>). */
 	static int minimization = MINIMIZE_HOPCROFT;
@@ -140,8 +146,8 @@ public class Automaton implements Serializable, Cloneable {
 	
 	boolean isDebug() {
 		if (is_debug == null)
-			is_debug = Boolean.valueOf(System.getProperty("dk.brics.automaton.debug") != null);
-		return is_debug.booleanValue();
+			is_debug = System.getProperty("dk.brics.automaton.debug") != null;
+		return is_debug;
 	}
 	
 	/** 
@@ -319,6 +325,8 @@ public class Automaton implements Serializable, Cloneable {
 	 * Assigns consecutive numbers to the given states. 
 	 */
 	static void setStateNumbers(Set<State> states) {
+		if (states.size() == Integer.MAX_VALUE)
+			throw new IllegalArgumentException("number of states exceeded Integer.MAX_VALUE");
 		int number = 0;
 		for (State s : states)
 			s.number = number++;
@@ -397,8 +405,8 @@ public class Automaton implements Serializable, Cloneable {
 	 */
 	char[] getStartPoints() {
 		Set<Character> pointset = new HashSet<Character>();
+		pointset.add(Character.MIN_VALUE);
 		for (State s : getStates()) {
-			pointset.add(Character.MIN_VALUE);
 			for (Transition t : s.transitions) {
 				pointset.add(t.min);
 				if (t.max < Character.MAX_VALUE)
@@ -483,6 +491,7 @@ public class Automaton implements Serializable, Cloneable {
 			initial = p;
 			for (int i = 0; i < singleton.length(); i++) {
 				State q = new State();
+				q.number = i;
 				p.transitions.add(new Transition(singleton.charAt(i), q));
 				p = q;
 			}
@@ -669,13 +678,10 @@ public class Automaton implements Serializable, Cloneable {
 	 * Retrieves a serialized <code>Automaton</code> located by a URL.
 	 * @param url URL of serialized automaton
 	 * @exception IOException if input/output related exception occurs
-	 * @exception OptionalDataException if the data is not a serialized object
-	 * @exception InvalidClassException if the class serial number does not match
 	 * @exception ClassCastException if the data is not a serialized <code>Automaton</code>
 	 * @exception ClassNotFoundException if the class of the serialized object cannot be found
 	 */
-	public static Automaton load(URL url) throws IOException, OptionalDataException, ClassCastException, 
-	                                             ClassNotFoundException, InvalidClassException {
+	public static Automaton load(URL url) throws IOException, ClassCastException, ClassNotFoundException {
 		return load(url.openStream());
 	}
 	
@@ -683,13 +689,10 @@ public class Automaton implements Serializable, Cloneable {
 	 * Retrieves a serialized <code>Automaton</code> from a stream.
 	 * @param stream input stream with serialized automaton
 	 * @exception IOException if input/output related exception occurs
-	 * @exception OptionalDataException if the data is not a serialized object
-	 * @exception InvalidClassException if the class serial number does not match
 	 * @exception ClassCastException if the data is not a serialized <code>Automaton</code>
 	 * @exception ClassNotFoundException if the class of the serialized object cannot be found
 	 */
-	public static Automaton load(InputStream stream) throws IOException, OptionalDataException, ClassCastException, 
-	                                                        ClassNotFoundException, InvalidClassException {
+	public static Automaton load(InputStream stream) throws IOException, ClassCastException, ClassNotFoundException {
 		ObjectInputStream s = new ObjectInputStream(stream);
 		return (Automaton)s.readObject();
 	}

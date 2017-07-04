@@ -1,7 +1,7 @@
 /*
  * dk.brics.automaton
  * 
- * Copyright (c) 2001-2011 Anders Moeller
+ * Copyright (c) 2001-2017 Anders Moeller
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.TreeSet;
+import java.util.SortedSet;
 
 /**
  * Operations for minimizing automata.
@@ -53,6 +57,9 @@ final public class MinimizationOperations {
 				break;
 			case Automaton.MINIMIZE_BRZOZOWSKI:
 				minimizeBrzozowski(a);
+				break;
+			case Automaton.MINIMIZE_VALMARI:
+				minimizeValmari(a);
 				break;
 			default:
 				minimizeHopcroft(a);
@@ -381,6 +388,133 @@ final public class MinimizationOperations {
 		}
 		a.removeDeadTransitions();
 	}
+
+	/**
+	 * Minimizes the given automaton using Valmari's algorithm.
+	 */
+	public static void minimizeValmari(Automaton automaton) {
+		automaton.determinize();
+		Set<State> states = automaton.getStates();
+		splitTransitions(states);
+		int stateCount = states.size();
+		int transitionCount = automaton.getNumberOfTransitions();
+		Set<State> acceptStates = automaton.getAcceptStates();
+		Partition blocks = new Partition(stateCount);
+		Partition cords = new Partition(transitionCount);
+		IntPair[] labels = new IntPair[transitionCount];
+		int[] tails = new int[transitionCount];
+		int[] heads = new int[transitionCount];
+		// split transitions in 'heads', 'labels', and 'tails'
+		Automaton.setStateNumbers(states);
+		int number = 0;
+		for (State s : automaton.getStates()) {
+			for (Transition t : s.getTransitions()) {
+				tails[number] = s.number;
+				labels[number] = new IntPair(t.min, t.max);
+				heads[number] = t.getDest().number;
+				number++;
+			}
+		}
+		// make initial block partition
+		for (State s : acceptStates)
+			blocks.mark(s.number);
+		blocks.split();
+		// make initial transition partition
+		if (transitionCount > 0) {
+			Arrays.sort(cords.elements, new LabelComparator(labels));
+			cords.setCount = cords.markedElementCount[0] = 0;
+			IntPair a = labels[cords.elements[0]];
+			for (int i = 0; i < transitionCount; ++i) {
+				int t = cords.elements[i];
+				if (labels[t].n1 != a.n1 || labels[t].n2 != a.n2) {
+					a = labels[t];
+					cords.past[cords.setCount++] = i;
+					cords.first[cords.setCount] = i;
+					cords.markedElementCount[cords.setCount] = 0;
+				}
+				cords.setNo[t] = cords.setCount;
+				cords.locations[t] = i;
+			}
+			cords.past[cords.setCount++] = transitionCount;
+		}
+		// split blocks and cords
+		int[] A = new int[transitionCount];
+		int[] F = new int[stateCount+1];
+		makeAdjacent(A, F, heads, stateCount, transitionCount);
+		for (int c = 0; c < cords.setCount; ++c) {
+			for (int i = cords.first[c]; i < cords.past[c]; ++i)
+				blocks.mark(tails[cords.elements[i]]);
+			blocks.split();
+			for (int b = 1; b < blocks.setCount; ++b) {
+				for (int i = blocks.first[b]; i < blocks.past[b]; ++i) {
+					for (int j = F[blocks.elements[i]]; j < F[blocks.elements[i] + 1]; ++j) {
+						cords.mark(A[j]);
+					}
+				}
+				cords.split();
+			}
+		}
+		// build states and acceptance states
+		State[] newStates = new State[blocks.setCount];
+		for (int bl = 0; bl < blocks.setCount; ++bl) {
+			newStates[bl] = new State();
+			if (blocks.first[bl] < acceptStates.size())
+				newStates[bl].accept = true;
+		}
+		// build transitions
+		for (int t = 0; t < transitionCount; ++t) {
+			if (blocks.locations[tails[t]] == blocks.first[blocks.setNo[tails[t]]]) {
+				State tail = newStates[blocks.setNo[tails[t]]];
+				State head = newStates[blocks.setNo[heads[t]]];
+				tail.addTransition(new Transition((char)labels[t].n1, (char)labels[t].n2, head));
+			}
+		}
+		automaton.setInitialState(newStates[blocks.setNo[automaton.getInitialState().number]]);
+		automaton.reduce();
+	}
+
+	private static void makeAdjacent(int[] A, int[] F, int[] K, int nn, int mm) {
+		for (int q=0; q <= nn; ++q)
+			F[q] = 0;
+		for (int t=0; t < mm; ++t)
+			++F[K[t]];
+		for (int q=0; q < nn; ++q)
+			F[q+1] += F[q];
+		for (int t = mm; t-- > 0;)
+			A[--F[K[t]]] = t;
+	}
+
+	private static void splitTransitions(Set<State> states) {
+		TreeSet<Character> pointSet = new TreeSet<Character>();
+		for (State s : states) {
+			for (Transition t : s.getTransitions()) {
+				pointSet.add(t.min);
+				pointSet.add(t.max);
+			}
+		}
+		for (State s : states) {
+			Set<Transition> transitions = s.getTransitions();
+			s.resetTransitions();
+			for (Transition t : transitions) {
+				if (t.min == t.max) {
+					s.addTransition(t);
+					continue;
+				}
+				SortedSet<Character> headSet = pointSet.headSet(t.max, true);
+				SortedSet<Character> tailSet = pointSet.tailSet(t.min, false);
+				SortedSet<Character> intersection = new TreeSet<Character>(headSet);
+				intersection.retainAll(tailSet);
+				char start = t.min;
+				for (Character c : intersection) {
+					s.addTransition(new Transition(start, t.to));
+					s.addTransition(new Transition(c, t.to));
+					if (c - start > 1)
+						s.addTransition(new Transition((char) (start + 1), (char) (c - 1), t.to));
+					start = c;
+				}
+			}
+		}
+	}
 	
 	static class IntPair {
 
@@ -433,6 +567,96 @@ final public class MinimizationOperations {
 				sl.last = prev;
 			else
 				next.prev = prev;
+		}
+	}
+
+	static class Partition {
+
+		int[] markedElementCount; // number of marked elements in set
+		int[] touchedSets; // sets with marked elements
+		int touchedSetCount; // number of sets with marked elements
+
+		int setCount;   // number of sets
+		Integer[] elements; // elements, i.e s = { elements[first[s]], elements[first[s] + 1], ..., elements[past[s]-1] }
+		int[] locations; // location of element i in elements
+		int[] setNo; // the set number element i belongs to
+		int[] first; // "first": start index of set
+		int[] past; // "past": end index of set
+
+		Partition (int size) {
+			setCount = (size == 0) ? 0 : 1;
+			elements = new Integer[size];
+			locations = new int[size];
+			setNo = new int[size];
+			first = new int[size];
+			past = new int[size];
+			markedElementCount = new int[size];
+			touchedSets = new int[size];
+			for (int i = 0; i < size; ++i) {
+				elements[i] = locations[i] = i;
+				setNo[i] = 0;
+			}
+			if (setCount != 0) {
+				first[0] = 0;
+				past[0] = size;
+			}
+		}
+
+		void mark(int e) {
+			int s = setNo[e];
+			int i = locations[e];
+			int j = first[s] + markedElementCount[s];
+			elements[i] = elements[j];
+			locations[elements[i]] = i;
+			elements[j] = e;
+			locations[e] = j;
+			if (markedElementCount[s]++ == 0)
+				touchedSets[touchedSetCount++] = s;
+		}
+
+		void split() {
+			while (touchedSetCount > 0) {
+				int s = touchedSets[--touchedSetCount];
+				int j = first[s] + markedElementCount[s];
+				if (j == past[s]) {
+					markedElementCount[s] = 0;
+					continue;
+				}
+				// choose the smaller of the marked and unmarked part, and make it a new set
+				if (markedElementCount[s] <= past[s]-j) {
+					first[setCount] = first[s];
+					past[setCount] = first[s] = j;
+				} else {
+					past[setCount] = past[s];
+					first[setCount] = past[s] = j;
+				}
+				for (int i = first[setCount]; i < past[setCount]; ++i)
+					setNo[elements[i]] = setCount;
+				markedElementCount[s] = markedElementCount[setCount++] = 0;
+			}
+		}
+	}
+
+	static class LabelComparator implements Comparator<Integer> {
+
+		private IntPair[] labels;
+
+		LabelComparator(IntPair[] labels) {
+			this.labels = labels;
+		}
+
+		public int compare(Integer i, Integer j) {
+			IntPair p1 = labels[i];
+			IntPair p2 = labels[j];
+			if (p1.n1 < p2.n1)
+				return -1;
+			if (p1.n1 > p2.n1)
+				return 1;
+			if (p1.n2 < p2.n2)
+				return -1;
+			if (p1.n2 > p2.n2)
+				return 1;
+			return 0;
 		}
 	}
 }

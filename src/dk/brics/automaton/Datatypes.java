@@ -1,7 +1,7 @@
 /*
  * dk.brics.automaton
  * 
- * Copyright (c) 2001-2011 Anders Moeller
+ * Copyright (c) 2001-2017 Anders Moeller
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -258,7 +258,7 @@ final public class Datatypes {
 	 * <tr><td><tt>Char</tt></td><td><a target="_top" href="http://www.w3.org/TR/REC-xml/#NT-Char">Char</a> from XML 1.0</td></tr>
 	 * <tr><td><tt>NameChar</tt></td><td><a target="_top" href="http://www.w3.org/TR/REC-xml/#NT-NameChar">NameChar</a> from XML 1.0</td></tr>
 	 * <tr><td><tt>URI</tt></td><td><a target="_top" href="http://rfc.net/rfc2396.html#sA%2e">URI</a> from RFC2396 with
-	 * amendments from <a target="_top" href="http://www.faqs.org/rfcs/rfc2373.html">RFC2373</td></tr>
+	 * amendments from <a target="_top" href="http://www.faqs.org/rfcs/rfc2373.html">RFC2373</a></td></tr>
 	 * <tr><td><tt>anyname</tt></td><td>optional URI enclosed by brackets, followed by NCName</td></tr>
 	 * <tr><td><tt>noap</tt></td><td>strings not containing '@' and '%'</td></tr>
 	 * <tr><td><tt>whitespace</tt></td><td>optional <a target="_top" href="http://www.w3.org/TR/REC-xml/#NT-S">S</a> from XML 1.0</td></tr>
@@ -457,6 +457,7 @@ final public class Datatypes {
 	 */
 	public static boolean exists(String name) {
 		try {
+			//noinspection ConstantConditions
 			Datatypes.class.getClassLoader().getResource(name + ".aut").openStream().close();
 		} catch (IOException e) {
 			return false;
@@ -467,6 +468,7 @@ final public class Datatypes {
 	private static Automaton load(String name) {
 		try {
 			URL url = Datatypes.class.getClassLoader().getResource(name + ".aut");
+			//noinspection ConstantConditions
 			return Automaton.load(url.openStream());
 		} catch (IOException e) {
 			e.printStackTrace();

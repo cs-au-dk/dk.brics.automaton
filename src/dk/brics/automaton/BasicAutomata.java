@@ -1,7 +1,7 @@
 /*
  * dk.brics.automaton
  * 
- * Copyright (c) 2001-2011 Anders Moeller
+ * Copyright (c) 2001-2017 Anders Moeller
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -47,8 +47,7 @@ final public class BasicAutomata {
 	 */
 	public static Automaton makeEmpty() {
 		Automaton a = new Automaton();
-		State s = new State();
-		a.initial = s;
+		a.initial = new State();
 		a.deterministic = true;
 		return a;
 	}
@@ -209,10 +208,10 @@ final public class BasicAutomata {
 	 * decimal non-negative integers in the given interval.
 	 * @param min minimal value of interval
 	 * @param max maximal value of inverval (both end points are included in the interval)
-	 * @param digits if >0, use fixed number of digits (strings must be prefixed 
+	 * @param digits if &gt;0, use fixed number of digits (strings must be prefixed
 	 *               by 0's to obtain the right length) -
 	 *               otherwise, the number of digits is not fixed
-	 * @exception IllegalArgumentException if min>max or if numbers in the interval cannot be expressed
+	 * @exception IllegalArgumentException if min&gt;max or if numbers in the interval cannot be expressed
 	 *                                     with the given fixed number of digits
 	 */
 	public static Automaton makeInterval(int min, int max, int digits) throws IllegalArgumentException {
@@ -292,7 +291,7 @@ final public class BasicAutomata {
 		StringBuilder b = new StringBuilder();
 		b.append("0*(0|");
 		if (i < n.length())
-			b.append("[0-9]{1," + (n.length() - i - 1) + "}|");
+			b.append("[0-9]{1,").append(n.length() - i - 1).append("}|");
 		maxInteger(n.substring(i), 0, b);
 		b.append(")");
 		return Automaton.minimize((new RegExp(b.toString())).toAutomaton());
@@ -303,7 +302,7 @@ final public class BasicAutomata {
 		if (i < n.length()) {
 			char c = n.charAt(i);
 			if (c != '0')
-				b.append("[0-" + (char)(c-1) + "][0-9]{" + (n.length() - i - 1) + "}|");
+				b.append("[0-").append((char) (c - 1)).append("][0-9]{").append(n.length() - i - 1).append("}|");
 			b.append(c);
 			maxInteger(n, i + 1, b);
 		}
@@ -331,7 +330,7 @@ final public class BasicAutomata {
 		if (i < n.length()) {
 			char c = n.charAt(i);
 			if (c != '9')
-				b.append("[" + (char)(c+1) + "-9][0-9]{" + (n.length() - i - 1) + "}|");
+				b.append("[").append((char) (c + 1)).append("-9][0-9]{").append(n.length() - i - 1).append("}|");
 			b.append(c);
 			minInteger(n, i + 1, b);
 		}

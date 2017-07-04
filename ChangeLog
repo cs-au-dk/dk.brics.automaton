@@ -1,3 +1,12 @@
+1.11-8 -> 1.12-1
+================
+- added Valmari's minimization algorithm - contributed by S. Gregersen
+- now supports Maven - thanks to S. Gregersen
+- fixed missing check of 'minimize' option - thanks to V. Wuestholz
+- fixed state naming for singleton automata - thanks to A.M.W. Younang and S. Gregersen
+- RunAutomaton.setAlphabet now non-final - suggested by D. Lowe
+- minor simplification of 'determinize' - suggested by V. Berchet
+
 1.11-7 -> 1.11-8
 ================
 - caching of isDebug, to avoid synchronized call to System.getProperty - thanks to G. Lundh
@@ -24,7 +33,7 @@
   a minimal automaton that accepts a union of strings) - contributed by D. Weiss
 - added call to clearHashCode in Automaton.reduce - thanks to D. Weiss 
 - minimization is now optional in RegExp.toAutomaton - suggested by H. Zauner
-- SpecialOperations.reverse made public - suggested by Daniel Lowe
+- SpecialOperations.reverse made public - suggested by D. Lowe
 
 1.11-1 -> 1.11-2
 ================

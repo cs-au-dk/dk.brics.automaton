@@ -3,8 +3,8 @@
 <project name="dk.brics.automaton" default="all" basedir=".">
 
 	<property name="project" value="automaton" />
-	<property name="version" value="1.11" />
-	<property name="release" value="8" />
+	<property name="version" value="1.12" />
+	<property name="release" value="1" />
 
 	<property name="optimize" value="on" />
 	<property name="debug" value="off" />
@@ -14,17 +14,17 @@
 	<target name="all" depends="jar,doc" />
 
 	<target name="compile">
-		<mkdir dir="build" />
-		<javac srcdir="src" destdir="build" source="1.5" target="1.5" optimize="${optimize}" debug="${debug}" />
+		<mkdir dir="antbuild" />
+		<javac srcdir="src" destdir="antbuild" source="1.6" target="1.6" optimize="${optimize}" debug="${debug}" includeantruntime="false" />
 	</target>
 
 	<target name="jar" depends="compile,datatypes">
 		<mkdir dir="dist" />
-		<jar jarfile="dist/${project}.jar" basedir="build" includes="dk/**/*.class,*.aut" />
+		<jar jarfile="dist/${project}.jar" basedir="antbuild" includes="dk/**/*.class,*.aut" />
 	</target>
 
 	<target name="clean">
-		<delete dir="build" />
+		<delete dir="antbuild" />
 		<delete dir="doc" />
 		<delete dir="dist" />
 	</target>
@@ -32,12 +32,12 @@
 	<dependset>
 		<srcfilelist dir="src/dk/brics/automaton" files="Datatypes.java"/>
 		<srcfilelist dir="src" files="Unicode.txt"/>
-		<targetfileset dir="build" includes="*.aut"/>
+		<targetfileset dir="antbuild" includes="*.aut"/>
 	</dependset>
 
 	<target name="datatypes" depends="compile">
-		<java classname="dk.brics.automaton.Datatypes" classpath="build">
-			<sysproperty key="dk.brics.automaton.datatypes" value="build"/>
+		<java classname="dk.brics.automaton.Datatypes" classpath="antbuild">
+			<sysproperty key="dk.brics.automaton.datatypes" value="antbuild"/>
 		</java>
 	</target>
 	
@@ -71,9 +71,10 @@
 			author="true" 
 			notree="true" 
 			nohelp="true" 
-			windowtitle="dk.brics.automaton">
+			windowtitle="dk.brics.automaton"
+			additionalparam="-Xdoclint:none">
 			<doctitle><![CDATA[dk.brics.automaton<br>API Specification]]></doctitle>
-			<bottom><![CDATA[<i> Copyright &#169; 2001-2011 Anders M&oslash;ller. </i>]]></bottom>
+			<bottom><![CDATA[<i> Copyright &#169; 2001-2017 Anders M&oslash;ller. </i>]]></bottom>
 			<link href="http://download.oracle.com/javase/1.5.0/docs/api/" />
 		</javadoc>
 	</target>

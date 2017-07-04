@@ -1,7 +1,7 @@
 /*
  * dk.brics.automaton - AutomatonMatcher
  *
- * Copyright (c) 2008-2011 John Gibson
+ * Copyright (c) 2008-2017 John Gibson
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@ public class AutomatonMatcher implements MatchResult {
 
 	/**
 	 * Find the next matching subsequence of the input.
-	 * <br />
+	 * <br>
 	 * This also updates the values for the {@code start}, {@code end}, and
 	 * {@code group} methods.
 	 *
@@ -154,7 +154,7 @@ public class AutomatonMatcher implements MatchResult {
 	/**
 	 * Returns the offset after the last character matched of the specified
 	 * capturing group.
-	 * <br />
+	 * <br>
 	 * Note that because the automaton does not support capturing groups the
 	 * only valid group is 0 (the entire match).
 	 *
@@ -186,7 +186,7 @@ public class AutomatonMatcher implements MatchResult {
 	/**
 	 * Returns the subsequence of the input found by the specified capturing
 	 * group during the previous match operation.
-	 * <br />
+	 * <br>
 	 * Note that because the automaton does not support capturing groups the
 	 * only valid group is 0 (the entire match).
 	 *
@@ -206,7 +206,7 @@ public class AutomatonMatcher implements MatchResult {
 
 	/**
 	 * Returns the number of capturing groups in the underlying automaton.
-	 * <br />
+	 * <br>
 	 * Note that because the automaton does not support capturing groups this
 	 * method will always return 0.
 	 *
@@ -231,7 +231,7 @@ public class AutomatonMatcher implements MatchResult {
 	/**
 	 * Returns the offset of the first character matched of the specified
 	 * capturing group.
-	 * <br />
+	 * <br>
 	 * Note that because the automaton does not support capturing groups the
 	 * only valid group is 0 (the entire match).
 	 *
