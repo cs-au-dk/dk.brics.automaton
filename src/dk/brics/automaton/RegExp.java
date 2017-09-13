@@ -466,7 +466,7 @@ public class RegExp {
 			b.append(")");
 			break;
 		case REGEXP_CHAR:
-			b.append("\\").append(c);
+			appendChar(c, b);
 			break;
 		case REGEXP_CHAR_RANGE:
 			b.append("[\\").append(from).append("-\\").append(to).append("]");
@@ -478,7 +478,13 @@ public class RegExp {
 			b.append("#");
 			break;
 		case REGEXP_STRING:
-			b.append("\"").append(s).append("\"");
+			if (s.indexOf('"') == -1) {
+				b.append("\"").append(s).append("\"");
+			} else {
+				for (int i = 0; i < s.length(); i++) {
+					appendChar(s.charAt(i), b);
+				}
+			}
 			break;
 		case REGEXP_ANYSTRING:
 			b.append("@");
@@ -501,6 +507,13 @@ public class RegExp {
 			break;
 		}
 		return b;
+	}
+
+	private void appendChar(char c, StringBuilder b) {
+		if ("|&?*+{},![]^-.#@\"()<>\\".indexOf(c) != -1) {
+			b.append("\\");
+		}
+		b.append(c);
 	}
 
 	/** 

@@ -1,3 +1,7 @@
+1.12-1 -> 1.12.2
+================
+- fixed RegExp.toString - thanks to A. Gargantini
+
 1.11-8 -> 1.12-1
 ================
 - added Valmari's minimization algorithm - contributed by S. Gregersen
