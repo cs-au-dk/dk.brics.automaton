@@ -37,6 +37,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Random;
 
+import com.google.gson.Gson;
+
 /**
  * Special automata operations.
  */
@@ -459,20 +461,6 @@ final public class SpecialOperations {
 		return strings;
 	}
 
-	/**
-	 * Returns a small subset of accepted strings of the given length.
-	 * When given a choice of transitions, explores up to 3 randomly
-	 * prob: when a transition has multiple satisfying chars, the probability of including each such char
-	 */
-	public static Set<String> getRandomStrings(Automaton a, int length, double prob) {
-		HashSet<String> strings = new HashSet<String>();
-		if (a.isSingleton() && a.singleton.length() == length)
-			strings.add(a.singleton);
-		else if (length >= 0)
-			getRandomStrings(a.initial, strings, new StringBuilder(), length, prob);
-		return strings;
-	}
-	
 	private static void getStrings(State s, Set<String> strings, StringBuilder path, int length) {
 		if (length == 0) {
 			if (s.accept)
@@ -502,10 +490,28 @@ final public class SpecialOperations {
 		return null;
 	}
 
+	/**
+	 * Returns a small subset of accepted strings of the given length.
+	 * When given a choice of transitions, explores up to 3 randomly
+	 * prob: when a transition has multiple satisfying chars, the probability of including each such char
+	 */
+	public static Set<String> getRandomStrings(Automaton a, int length, double prob) {
+		HashSet<String> strings = new HashSet<String>();
+		if (a.isSingleton() && a.singleton.length() == length) {
+			System.err.println("(singleton) getRandomStrings: STR: " + new Gson().toJson(a.singleton));
+			strings.add(a.singleton);
+		}
+		else if (length >= 0)
+			getRandomStrings(a.initial, strings, new StringBuilder(), length, prob);
+		return strings;
+	}
+	
 	private static void getRandomStrings(State s, Set<String> strings, StringBuilder path, int length, double prob) {
 		if (length == 0) {
-			if (s.accept)
+			if (s.accept) {
+				System.err.println("(accept) getRandomStrings: STR: " + new Gson().toJson(path.toString()));
 				strings.add(path.toString());
+			}
 		} else {
 			if (0 < s.transitions.size()) {
 				// RANDOM: Choose up to 3 transitions
@@ -523,23 +529,23 @@ final public class SpecialOperations {
 					Random rand = new Random();
 					//System.err.println("  t.min " + t.min + " t.max " + t.max);
 					int nElts = (t.max - t.min) + 1;
-					Set<Integer> allChars = new HashSet<Integer>();
-					for (int i = t.min; i <= t.max; i++) {
-						allChars.add(i);
-					}
 					Set<Integer> charsToExplore = new HashSet<Integer>();
 					// Always explore at least one
-					charsToExplore.add(getRandomElement(allChars));
+					charsToExplore.add(t.min + rand.nextInt(nElts));
 					// Try subsequent choices probabilistically.
-					for (int i = 1; i < nElts; i++) {
+					for (int i = t.min; i <= t.max; i++) {
 						if (rand.nextDouble() < prob) {
-							charsToExplore.add(getRandomElement(allChars));
+							charsToExplore.add(i);
 						}
 					}
 					
+					// Explore the chosen chars
 					for (Integer charToExplore : charsToExplore) {
+						// Add a char to path
 						path.append((char)charToExplore.intValue());
+						// Recurse to update strings further
 						getRandomStrings(t.to, strings, path, length - 1, prob);
+						// Remove that char from path and try again (?)
 						path.deleteCharAt(path.length() - 1);
 					}
 				}

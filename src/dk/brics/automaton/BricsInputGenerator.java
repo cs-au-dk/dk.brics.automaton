@@ -24,7 +24,7 @@ public class BricsInputGenerator {
 		int maxLength = Integer.parseInt(args[1]);
 		double prob = Double.parseDouble(args[2]);
 
-		RegExp re = new RegExp(regexPattern);
+		RegExp re = new RegExp(regexPattern, RegExp.ALL);
 		Automaton a = re.toAutomaton();
 
 		boolean getAllStrings = false;
@@ -50,12 +50,12 @@ public class BricsInputGenerator {
 
 		System.out.println(acceptedAllStrings.size() + " all strings");
 		for (String s : acceptedAllStrings) {
-			System.out.println("ALL STR: " + new Gson().toJson(s));
+			System.out.println("FINAL: ALL STR: " + new Gson().toJson(s));
 		}
 
 		System.out.println(acceptedRandStrings.size() + " rand strings");
 		for (String s : acceptedRandStrings) {
-			System.out.println("RAND STR: " + new Gson().toJson(s));
+			System.out.println("FINAL: RAND STR: " + new Gson().toJson(s));
 		}
 	}
 }
