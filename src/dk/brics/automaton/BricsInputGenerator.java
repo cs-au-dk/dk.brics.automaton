@@ -10,19 +10,29 @@ import dk.brics.automaton.SpecialOperations;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Random;
 
 import com.google.gson.Gson;
 
 public class BricsInputGenerator {
 	public static void main(String[] args) {
-		if (args.length != 3) {
-			System.err.println("Generate matching strings up to length L for regex R, controlled by probability P");
-			System.err.println("usage: ... R L P");
+		if (args.length != 4) {
+			System.err.println("Generate matching strings up to length L for regex R, controlled by probability P and seed S");
+			System.err.println("usage: ... R L P S");
 			System.exit(1);
 		}
 		String regexPattern = args[0];
 		int maxLength = Integer.parseInt(args[1]);
 		double prob = Double.parseDouble(args[2]);
+		int seed = Integer.parseInt(args[3]);
+
+		Random rnd = new Random();
+		if (0 <= seed) {
+			System.err.println("Random: Using seed " + seed);
+			rnd.setSeed(seed);
+		} else {
+			System.err.println("Random: No seed provided");
+		}
 
 		RegExp re = new RegExp(regexPattern, RegExp.ALL);
 		Automaton a = re.toAutomaton();
@@ -41,7 +51,7 @@ public class BricsInputGenerator {
 			}
 			
 			if (getRandStrings) {
-				Set<String> randStrings = SpecialOperations.getRandomStrings(a, i, prob);
+				Set<String> randStrings = SpecialOperations.getRandomStrings(a, i, prob, rnd);
 				if (randStrings != null) {
 					acceptedRandStrings.addAll(randStrings);
 				}
