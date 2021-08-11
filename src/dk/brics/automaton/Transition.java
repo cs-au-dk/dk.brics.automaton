@@ -32,7 +32,7 @@ package dk.brics.automaton;
 import java.io.Serializable;
 
 /** 
- * <tt>Automaton</tt> transition. 
+ * <code>Automaton</code> transition. 
  * <p>
  * A transition, which belongs to a source state, consists of a Unicode character interval
  * and a destination state.
@@ -97,7 +97,7 @@ public class Transition implements Serializable, Cloneable {
 	/** 
 	 * Checks for equality.
 	 * @param obj object to compare with
-	 * @return true if <tt>obj</tt> is a transition with same 
+	 * @return true if <code>obj</code> is a transition with same 
 	 *         character interval and destination state as this transition.
 	 */
 	@Override

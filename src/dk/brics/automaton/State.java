@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 /** 
- * <tt>Automaton</tt> state. 
+ * <code>Automaton</code> state. 
  * @author Anders M&oslash;ller &lt;<a href="mailto:amoeller@cs.au.dk">amoeller@cs.au.dk</a>&gt;
  */
 public class State implements Serializable, Comparable<State> {

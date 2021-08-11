@@ -73,7 +73,7 @@ public class StatePair {
 	/** 
 	 * Checks for equality.
 	 * @param obj object to compare with
-	 * @return true if <tt>obj</tt> represents the same pair of states as this pair
+	 * @return true if <code>obj</code> represents the same pair of states as this pair
 	 */
 	@Override
 	public boolean equals(Object obj) {
