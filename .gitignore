@@ -6,3 +6,6 @@
 /.idea/workspace.xml
 /.idea/kotlinc.xml
 *.iml
+.settings*
+.classpath
+.project
