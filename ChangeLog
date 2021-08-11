@@ -1,4 +1,8 @@
-1.12-1 -> 1.12.2
+1.12-2 -> 1.12-3
+================
+- upgrade to Java 11 - thanks to L.J. McGibbney
+
+1.12-1 -> 1.12-2
 ================
 - fixed RegExp.toString - thanks to A. Gargantini
 

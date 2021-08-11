@@ -5,7 +5,7 @@
 
   <groupId>dk.brics</groupId>
   <artifactId>automaton</artifactId>
-  <version>1.12-2</version>
+  <version>1.12-3</version>
   <packaging>jar</packaging>
 
   <name>dk.brics.automaton</name>
@@ -98,6 +98,15 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <doclint>none</doclint>
+          <nodeprecated>true</nodeprecated>
+          <notree>true</notree>
+          <nohelp>true</nohelp>
+          <links>
+            <link>https://docs.oracle.com/en/java/javase/11/docs/api/</link>
+          </links>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
