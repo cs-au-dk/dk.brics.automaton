@@ -6,7 +6,7 @@
   <groupId>dk.brics</groupId>
   <artifactId>automaton</artifactId>
   <version>1.12-2</version>
-  <packaging>jar</packaging>
+  <packaging>bundle</packaging>
 
   <name>dk.brics.automaton</name>
   <description>
@@ -133,6 +133,16 @@
               <value>build</value>
             </systemProperty>
           </systemProperties>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Export-Package>dk.brics.automaton</Export-Package>
+          </instructions>
         </configuration>
       </plugin>
     </plugins>
