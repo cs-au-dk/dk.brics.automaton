@@ -99,6 +99,7 @@
           </execution>
         </executions>
         <configuration>
+          <source>8</source>
           <doclint>none</doclint>
           <nodeprecated>true</nodeprecated>
           <notree>true</notree>
