@@ -15,7 +15,7 @@
 
 	<target name="compile">
 		<mkdir dir="antbuild" />
-		<javac srcdir="src" destdir="antbuild" source="11" target="11" optimize="${optimize}" debug="${debug}" includeantruntime="false" />
+		<javac srcdir="src" destdir="antbuild" source="1.8" target="1.8" optimize="${optimize}" debug="${debug}" includeantruntime="false" />
 	</target>
 
 	<target name="jar" depends="compile,datatypes">
@@ -75,7 +75,7 @@
 			additionalparam="-Xdoclint:none">
 			<doctitle><![CDATA[dk.brics.automaton<br>API Specification]]></doctitle>
 			<bottom><![CDATA[<i> Copyright &#169; 2001-2021 Anders M&oslash;ller. </i>]]></bottom>
-			<link href="https://docs.oracle.com/en/java/javase/11/docs/api/" />
+			<link href="https://docs.oracle.com/javase/8/docs/api/" />
 		</javadoc>
 	</target>
 
