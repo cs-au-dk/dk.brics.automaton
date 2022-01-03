@@ -4,7 +4,7 @@
 
 	<property name="project" value="automaton" />
 	<property name="version" value="1.12" />
-	<property name="release" value="3" />
+	<property name="release" value="4" />
 
 	<property name="optimize" value="on" />
 	<property name="debug" value="off" />
@@ -74,7 +74,7 @@
 			windowtitle="dk.brics.automaton"
 			additionalparam="-Xdoclint:none">
 			<doctitle><![CDATA[dk.brics.automaton<br>API Specification]]></doctitle>
-			<bottom><![CDATA[<i> Copyright &#169; 2001-2021 Anders M&oslash;ller. </i>]]></bottom>
+			<bottom><![CDATA[<i> Copyright &#169; 2001-2022 Anders M&oslash;ller. </i>]]></bottom>
 			<link href="https://docs.oracle.com/javase/8/docs/api/" />
 		</javadoc>
 	</target>

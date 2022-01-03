@@ -5,7 +5,7 @@
 
   <groupId>dk.brics</groupId>
   <artifactId>automaton</artifactId>
-  <version>1.12-3</version>
+  <version>1.12-4</version>
   <packaging>jar</packaging>
 
   <name>dk.brics.automaton</name>

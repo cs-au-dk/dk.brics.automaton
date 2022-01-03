@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="dk.brics.automaton" target="11" />
+      <module name="dk.brics.automaton" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
