@@ -50,7 +50,8 @@
   </properties>
 
   <build>
-    <sourceDirectory>src</sourceDirectory>
+    <sourceDirectory>src/main</sourceDirectory>
+    <testSourceDirectory>src/test</testSourceDirectory>
     <outputDirectory>build</outputDirectory>
     <plugins>
       <plugin>
