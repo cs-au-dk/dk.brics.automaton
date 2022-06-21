@@ -35,6 +35,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import static java.lang.Character.highSurrogate;
+import static java.lang.Character.lowSurrogate;
+import static java.lang.Character.MAX_CODE_POINT;
+import static java.lang.Character.MAX_LOW_SURROGATE;
+import static java.lang.Character.MAX_SURROGATE;
+import static java.lang.Character.MIN_CODE_POINT;
+import static java.lang.Character.MIN_LOW_SURROGATE;
+import static java.lang.Character.MIN_SURROGATE;
+
 /**
  * Construction of basic automata.
  */
@@ -108,6 +117,99 @@ final public class BasicAutomata {
 			s1.transitions.add(new Transition(min, max, s2));
 		a.deterministic = true;
 		return a;
+	}
+
+	/**
+	 * Returns a new (deterministic) automaton that accepts one or two characters which
+	 * represent a valid code point in the given interval (including both end points).
+	 *
+	 * Note that code points in the range from {@link Character#MIN_SURROGATE} to
+	 * {@link Character#MAX_SURROGATE} (including both end points) cannot be
+	 * represented in standard UTF-16. The returned automaton will make no attempts to
+	 * accept match code points in aforementioned range.
+	 *
+	 * @param min Inclusive lower bound of the range.
+	 * @param max Inclusive upper bound of the range.
+	 * @return An automaton matching code point in range `[min, max]`, except for
+	 *         code points that are reserved as UTF-16 surrogates according to the
+	 *         unicode standard.
+	 */
+	public static Automaton makeCodePointRange( int min, int max ) {
+		Automaton dfa = new Automaton();
+		dfa.setDeterministic(true);
+
+		// code point in range [MIN_SURROGATE, MAX_SURROGATE] cannot be
+		// represented in utf-16, so bracket it out where possible.
+		if( MIN_SURROGATE <= min && min <= MAX_SURROGATE ) min = MAX_SURROGATE+1;
+		if( MIN_SURROGATE <= max && max <= MAX_SURROGATE ) max = MIN_SURROGATE-1;
+
+		if( min > max )
+			return dfa;
+
+		min = Math.max(min, MIN_CODE_POINT);
+		max = Math.min(max, MAX_CODE_POINT);
+
+		State init = dfa.getInitialState();
+		State accept = new State();
+		accept.setAccept(true);
+
+		if( min < MIN_SURROGATE ) {
+			int end = Math.min(max, MIN_SURROGATE - 1);
+			init.addTransition( new Transition((char) min, (char) end, accept) );
+		}
+
+		if( max > MAX_SURROGATE ) {
+			if( min <= Character.MAX_VALUE ) {
+				// part of the range in [MIN_CODE_POINT, MIN_SURROGATE]
+				// (code points in this range are represented by a single utf-16 char)
+				min = Math.max(min, MAX_SURROGATE + 1);
+				int end = Math.min(max, Character.MAX_VALUE);
+				init.addTransition( new Transition((char) min, (char) end, accept) );
+			}
+
+			if( max > Character.MAX_VALUE ) {
+				// part of the range in [MAX_SURROGATE, Character.MAX_VALUE]
+				// (code points in this range are represented by a single utf-16 char)
+				min = Math.max(min, 1 + Character.MAX_VALUE);
+				char minHi = highSurrogate(min);
+				char maxHi = highSurrogate(max);
+				char minLo = lowSurrogate(min);
+				char maxLo = lowSurrogate(max);
+
+				// code point ranges below are represented by two (surrogate) utf-16 chars
+				if( minHi == maxHi ) {
+					// case where every code point in range has the same high surrogate
+					State next = new State();
+					init.addTransition( new Transition(minHi, next) );
+					next.addTransition( new Transition(minLo, maxLo, accept) );
+				} else {
+					if( minLo > MIN_LOW_SURROGATE ) {
+						// handle odd start of the range
+						State next = new State();
+						init.addTransition( new Transition(minHi, next) );
+						next.addTransition( new Transition(minLo, MAX_LOW_SURROGATE, accept) );
+						minHi++;
+					}
+
+					if( maxLo < MAX_LOW_SURROGATE ) {
+						// handle odd end of the range
+						State next = new State();
+						init.addTransition( new Transition(maxHi, next) );
+						next.addTransition( new Transition(MIN_LOW_SURROGATE, maxLo, accept) );
+						maxHi--;
+					}
+
+					if( minHi <= maxHi ) {
+						// handle middle of the range
+					  State next = new State();
+					  init.addTransition( new Transition(minHi, maxHi, next) );
+					  next.addTransition( new Transition(MIN_LOW_SURROGATE, MAX_LOW_SURROGATE, accept) );
+					}
+				}
+			}
+		}
+
+		return dfa;
 	}
 	
 	/** 
