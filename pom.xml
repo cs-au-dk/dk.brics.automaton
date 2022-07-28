@@ -18,7 +18,7 @@
   <licenses>
     <license>
       <name>BSD</name>
-      <url>http://www.opensource.org/licenses/bsd-license.php</url>
+      <url>https://opensource.org/licenses/BSD-3-Clause</url>
     </license>
   </licenses>
 
@@ -27,7 +27,7 @@
       <id>amoeller</id>
       <name>Anders Møller</name>
       <email>amoeller@cs.au.dk</email>
-      <url>http://cs.au.dk/~amoeller</url>
+      <url>https://cs.au.dk/~amoeller</url>
       <organization>Aarhus University</organization>
     </developer>
   </developers>
