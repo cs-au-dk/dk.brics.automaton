@@ -9,3 +9,4 @@
 .settings*
 .classpath
 .project
+/.jqwik-database

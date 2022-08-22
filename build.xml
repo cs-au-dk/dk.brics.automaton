@@ -30,7 +30,7 @@
 	</target>
 
 	<dependset>
-		<srcfilelist dir="src/dk/brics/automaton" files="Datatypes.java"/>
+		<srcfilelist dir="src/main/dk/brics/automaton" files="Datatypes.java"/>
 		<srcfilelist dir="src" files="Unicode.txt"/>
 		<targetfileset dir="antbuild" includes="*.aut"/>
 	</dependset>
