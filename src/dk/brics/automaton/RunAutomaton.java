@@ -146,7 +146,7 @@ public class RunAutomaton implements Serializable {
 	 * @param a an automaton
 	 */
 	public RunAutomaton(Automaton a) {
-		this(a, true);
+		this(a, true, null);
 	}
 
 	/**
@@ -188,10 +188,26 @@ public class RunAutomaton implements Serializable {
 	 * <code>Automaton</code>. If the given automaton is not deterministic,
 	 * it is determinized first.
 	 * @param a an automaton
-	 * @param tableize if true, a transition table is created which makes the <code>run</code> 
+	 * @param tableize if true, a transition table is created which makes the <code>run</code>
 	 *                 method faster in return of a higher memory usage
 	 */
 	public RunAutomaton(Automaton a, boolean tableize) {
+		this(a, tableize, null);
+	}
+
+	/**
+	 * Constructs a new <code>RunAutomaton</code> from a deterministic
+	 * <code>Automaton</code>. If the given automaton is not deterministic,
+	 * it is determinized first.
+	 * @param a an automaton
+	 * @param tableize if true, a transition table is created which makes the <code>run</code>
+	 *                 method faster in return of a higher memory usage
+   * @param overrideAcceptedTransition whether to set a specific integer value for an accepted state or not.
+	 *                              {@code null} indicates to simply treat a state that is accepted as
+	 *                              normal, a non-null value indicates to set all states which
+	 *                              could be accepted to a specific int value.
+	 */
+	protected RunAutomaton(Automaton a, boolean tableize, Integer overrideAcceptedTransition) {
 		a.determinize();
 		points = a.getStartPoints();
 		Set<State> states = a.getStates();
@@ -200,19 +216,39 @@ public class RunAutomaton implements Serializable {
 		size = states.size();
 		accept = new boolean[size];
 		transitions = new int[size * points.length];
+
+		boolean overrideTransitionWithState = overrideAcceptedTransition != null;
+		int overrideTransition = overrideTransitionWithState ? overrideAcceptedTransition : 0;
+
 		for (int n = 0; n < size * points.length; n++)
 			transitions[n] = -1;
+
 		for (State s : states) {
 			int n = s.number;
 			accept[n] = s.accept;
 			for (int c = 0; c < points.length; c++) {
 				State q = s.step(points[c]);
 				if (q != null)
-					transitions[n * points.length + c] = q.number;
+					transitions[n * points.length + c] =
+							transition(q, overrideTransitionWithState, overrideTransition);
+
 			}
 		}
+
 		if (tableize)
 			setAlphabet();
+	}
+
+	/**
+	 * For normal operation, simply return the transitioned to state.
+	 * If the transition is to an accepted state and an override value is provided, then return the
+	 * override.
+	 *
+	 * <p>This allows us to avoid looking up the accepted boolean array as we know we will have
+	 * reached an accepted state from the transition via the returned state.
+	 */
+	private int transition(State q, boolean overrideTransitionWithState, int override) {
+		return overrideTransitionWithState && q.number != -1 && q.accept ? override : q.number;
 	}
 
 	/**
