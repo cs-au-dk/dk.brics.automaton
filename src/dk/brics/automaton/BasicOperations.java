@@ -276,59 +276,10 @@ final public class BasicOperations {
 	 * the languages of the given automata. 
 	 * Never modifies the input automata languages.
 	 * <p>
-	 * Complexity: quadratic in number of states.
+	 * Complexity: linear in number of states (if already deterministic).
 	 */
 	static public Automaton intersection(Automaton a1, Automaton a2) {
-		if (a1.isSingleton()) {
-			if (a2.run(a1.singleton))
-				return a1.cloneIfRequired();
-			else
-				return BasicAutomata.makeEmpty();
-		}
-		if (a2.isSingleton()) {
-			if (a1.run(a2.singleton))
-				return a2.cloneIfRequired();
-			else
-				return BasicAutomata.makeEmpty();
-		}
-		if (a1 == a2)
-			return a1.cloneIfRequired();
-		Transition[][] transitions1 = Automaton.getSortedTransitions(a1.getStates());
-		Transition[][] transitions2 = Automaton.getSortedTransitions(a2.getStates());
-		Automaton c = new Automaton();
-		LinkedList<StatePair> worklist = new LinkedList<StatePair>();
-		HashMap<StatePair, StatePair> newstates = new HashMap<StatePair, StatePair>();
-		StatePair p = new StatePair(c.initial, a1.initial, a2.initial);
-		worklist.add(p);
-		newstates.put(p, p);
-		while (worklist.size() > 0) {
-			p = worklist.removeFirst();
-			p.s.accept = p.s1.accept && p.s2.accept;
-			Transition[] t1 = transitions1[p.s1.number];
-			Transition[] t2 = transitions2[p.s2.number];
-			for (int n1 = 0, b2 = 0; n1 < t1.length; n1++) {
-				while (b2 < t2.length && t2[b2].max < t1[n1].min)
-					b2++;
-				for (int n2 = b2; n2 < t2.length && t1[n1].max >= t2[n2].min; n2++) 
-					if (t2[n2].max >= t1[n1].min) {
-						StatePair q = new StatePair(t1[n1].to, t2[n2].to);
-						StatePair r = newstates.get(q);
-						if (r == null) {
-							q.s = new State();
-							worklist.add(q);
-							newstates.put(q, q);
-							r = q;
-						}
-						char min = t1[n1].min > t2[n2].min ? t1[n1].min : t2[n2].min;
-						char max = t1[n1].max < t2[n2].max ? t1[n1].max : t2[n2].max;
-						p.s.transitions.add(new Transition(min, max, r.s));
-					}
-			}
-		}
-		c.deterministic = a1.deterministic && a2.deterministic;
-		c.removeDeadTransitions();
-		c.checkMinimizeAlways();
-		return c;
+		return union(a1.complement(),a2.complement()).complement();
 	}
 		
 	/**
