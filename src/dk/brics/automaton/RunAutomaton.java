@@ -29,6 +29,8 @@
 
 package dk.brics.automaton;
 
+import dk.brics.automaton.filter.FilteringAutomatonMatcher;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -320,5 +322,15 @@ public class RunAutomaton implements Serializable {
 	 */
 	public AutomatonMatcher newMatcher(CharSequence s, int startOffset, int endOffset)  {
 		return new AutomatonMatcher(s.subSequence(startOffset, endOffset), this);
+	}
+
+	/**
+	 * Creates a new filtering automaton matcher for the given input.
+	 *
+	 * @param s the CharSequence to search
+	 * @return A new filtering automaton matcher for the given input.
+	 */
+	public FilteringAutomatonMatcher newFilteringMatcher(CharSequence s)  {
+		return new FilteringAutomatonMatcher(s, this);
 	}
 }
