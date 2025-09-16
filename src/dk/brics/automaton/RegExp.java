@@ -43,13 +43,15 @@ import java.util.Set;
  * <table>
  * <caption>Regular expression syntax</caption>
  * <tr><td><i>regexp</i></td><td>::=</td><td><i>unionexp</i></td><td></td><td></td></tr>
- * <tr><td></td><td>|</td><td></td><td></td><td></td></tr>
  *
  * <tr><td><i>unionexp</i></td><td>::=</td><td><i>interexp</i>&nbsp;<code><b>|</b></code>&nbsp;<i>unionexp</i></td><td>(union)</td><td></td></tr>
  * <tr><td></td><td>|</td><td><i>interexp</i></td><td></td><td></td></tr>
  *
- * <tr><td><i>interexp</i></td><td>::=</td><td><i>concatexp</i>&nbsp;<code><b>&amp;</b></code>&nbsp;<i>interexp</i></td><td>(intersection)</td><td><small>[OPTIONAL]</small></td></tr>
- * <tr><td></td><td>|</td><td><i>concatexp</i></td><td></td><td></td></tr>
+ * <tr><td><i>interexp</i></td><td>::=</td><td><i>optionalexp</i>&nbsp;<code><b>&amp;</b></code>&nbsp;<i>interexp</i></td><td>(intersection)</td><td><small>[OPTIONAL]</small></td></tr>
+ * <tr><td></td><td>|</td><td><i>optionalexp</i></td><td></td><td></td></tr>
+ *
+ * <tr><td><i>optionalexp</i></td><td>::=</td><td><i>concatexp</i></td><td></td><td></td></tr>
+ * <tr><td></td><td>|</td><td></td><td></td><td></td></tr>
  *
  * <tr><td><i>concatexp</i></td><td>::=</td><td><i>repeatexp</i>&nbsp;<i>concatexp</i></td><td>(concatenation)</td><td></td></tr>
  * <tr><td></td><td>|</td><td><i>repeatexp</i></td><td></td><td></td></tr>
@@ -72,29 +74,40 @@ import java.util.Set;
  * <tr><td><i>charclasses</i></td><td>::=</td><td><i>charclass</i>&nbsp;<i>charclasses</i></td><td></td><td></td></tr>
  * <tr><td></td><td>|</td><td><i>charclass</i></td><td></td><td></td></tr>
  *
- * <tr><td><i>charclass</i></td><td>::=</td><td><i>charexp</i>&nbsp;<code><b>-</b></code>&nbsp;<i>charexp</i></td><td>(character range, including end-points)</td><td></td></tr>
- * <tr><td></td><td>|</td><td><i>charexp</i></td><td></td><td></td></tr>
+ * <tr><td><i>charclass</i></td><td>::=</td><td><i>charclasschar</i>&nbsp;<code><b>-</b></code>&nbsp;<i>charclasschar</i></td><td>(character range, including end-points)</td><td></td></tr>
+ * <tr><td></td><td>|</td><td><i>charclasschar</i></td><td></td><td></td></tr>
+ *
+ * <tr><td><i>charclasschar</i></td><td>::=</td><td>{ &lt;Unicode character&gt; - <code><b>]</b></code> }</td><td>(a single unreserved character)</td><td></td></tr>
+ * <tr><td></td><td>|</td><td><code><b>\</b></code>&nbsp;&lt;Unicode character&gt;&nbsp;</td><td>(a single character)</td><td></td></tr>
  *
  * <tr><td><i>simpleexp</i></td><td>::=</td><td><i>charexp</i></td><td></td><td></td></tr>
  * <tr><td></td><td>|</td><td><code><b>.</b></code></td><td>(any single character)</td><td></td></tr>
  * <tr><td></td><td>|</td><td><code><b>#</b></code></td><td>(the empty language)</td><td><small>[OPTIONAL]</small></td></tr>
  * <tr><td></td><td>|</td><td><code><b>@</b></code></td><td>(any string)</td><td><small>[OPTIONAL]</small></td></tr>
  * <tr><td></td><td>|</td><td><code><b>"</b></code>&nbsp;&lt;Unicode string without double-quotes&gt;&nbsp;<code><b>"</b></code></td><td>(a string)</td><td></td></tr>
- * <tr><td></td><td>|</td><td><code><b>(</b></code>&nbsp;<code><b>)</b></code></td><td>(the empty string)</td><td></td></tr>
  * <tr><td></td><td>|</td><td><code><b>(</b></code>&nbsp;<i>unionexp</i>&nbsp;<code><b>)</b></code></td><td>(precedence override)</td><td></td></tr>
  * <tr><td></td><td>|</td><td><code><b>&lt;</b></code>&nbsp;&lt;identifier&gt;&nbsp;<code><b>&gt;</b></code></td><td>(named automaton)</td><td><small>[OPTIONAL]</small></td></tr>
  * <tr><td></td><td>|</td><td><code><b>&lt;</b><i>n</i>-<i>m</i><b>&gt;</b></code></td><td>(numerical interval)</td><td><small>[OPTIONAL]</small></td></tr>
  *
- * <tr><td><i>charexp</i></td><td>::=</td><td>&lt;Unicode character&gt;</td><td>(a single non-reserved character)</td><td></td></tr>
+ * <tr><td><i>charexp</i></td><td>::=</td><td>{ &lt;Unicode character&gt; - <i>reserved</i> }</td><td>(a single non-reserved character)</td><td></td></tr>
  * <tr><td></td><td>|</td><td><code><b>\</b></code>&nbsp;&lt;Unicode character&gt;&nbsp;</td><td>(a single character)</td><td></td></tr>
+ *
+ * <tr><td><i>reserved</i></td><td>::=</td><td><code><b>[</b></code> | <code><b>(</b></code> | <code><b>|</b></code> | <code><b>)</b></code>
+ *    | <code><b>?</b></code> | <code><b>*</b></code> | <code><b>+</b></code> | <code><b>"</b></code></td><td></td><td></td></tr>
+ * <tr><td></td><td>|</td><td><code><b>&amp;</b></code></td><td></td><td><small>[OPTIONAL]</small></td></tr>
+ * <tr><td></td><td>|</td><td><code><b>#</b></code></td><td></td><td><small>[OPTIONAL]</small></td></tr>
+ * <tr><td></td><td>|</td><td><code><b>@</b></code></td><td></td><td><small>[OPTIONAL]</small></td></tr>
+ * <tr><td></td><td>|</td><td><code><b>~</b></code></td><td></td><td><small>[OPTIONAL]</small></td></tr>
+ * <tr><td></td><td>|</td><td><code><b>&lt;</b></code></td><td></td><td><small>[OPTIONAL]</small></td></tr>
+ *
  * </table>
  * <p>
  * The productions marked <small>[OPTIONAL]</small> are only allowed
  * if specified by the syntax flags passed to the <code>RegExp</code>
- * constructor.  The reserved characters used in the (enabled) syntax
+ * constructor.  Outside character classes, the reserved characters used in the (enabled) syntax
  * must be escaped with backslash (<code><b>\</b></code>) or double-quotes
- * (<code><b>"..."</b></code>). (In contrast to other regexp syntaxes,
- * this is required also in character classes.)  Be aware that
+ * (<code><b>"..."</b></code>). Inside character classes, only right bracket
+ * (<code><b>]</b></code>) and backslash need to be escaped (with backslash).  Be aware that
  * dash (<code><b>-</b></code>) has a special meaning in <i>charclass</i> expressions.
  * An identifier is a string not containing right angle bracket
  * (<code><b>&gt;</b></code>) or dash (<code><b>-</b></code>).  Numerical intervals are
@@ -760,24 +773,37 @@ public class RegExp {
 	}
 
 	final RegExp parseUnionExp() throws IllegalArgumentException {
-		RegExp e = parseInterExp();
+		RegExp e;
+		if (peek("|"))
+			e = makeString("");
+		else
+			e = parseInterExp();
 		if (match('|'))
 			e = makeUnion(e, parseUnionExp());
 		return e;
 	}
 
 	final RegExp parseInterExp() throws IllegalArgumentException {
-		RegExp e = parseConcatExp();
+		RegExp e;
+		if (check(INTERSECTION) && peek("&"))
+			e = makeString("");
+		else
+			e = parseConcatExp();
 		if (check(INTERSECTION) && match('&'))
 			e = makeIntersection(e, parseInterExp());
 		return e;
 	}
 
 	final RegExp parseConcatExp() throws IllegalArgumentException {
-		RegExp e = parseRepeatExp();
-		if (more() && !peek(")|") && (!check(INTERSECTION) || !peek("&")))
-			e = makeConcatenation(e, parseConcatExp());
-		return e;
+		if (more() && !peek(")|") && (!check(INTERSECTION) || !peek("&"))) {
+			RegExp e = parseRepeatExp();
+			if (more() && !peek(")|") && (!check(INTERSECTION) || !peek("&"))) {
+				e = makeConcatenation(e, parseConcatExp());
+			}
+			return e;
+		} else {
+			return makeString("");
+		}
 	}
 
 	final RegExp parseRepeatExp() throws IllegalArgumentException {
@@ -846,14 +872,19 @@ public class RegExp {
 	}
 
 	final RegExp parseCharClass() throws IllegalArgumentException {
-		char c = parseCharExp();
+		char c = parseCharClassChar();
 		if (match('-'))
 			if (peek("]"))
                 return makeUnion(makeChar(c), makeChar('-'));
             else
-                return makeCharRange(c, parseCharExp());
+                return makeCharRange(c, parseCharClassChar());
 		else
 			return makeChar(c);
+	}
+
+	final char parseCharClassChar() throws IllegalArgumentException {
+		match('\\');
+		return next();
 	}
 
 	final RegExp parseSimpleExp() throws IllegalArgumentException {
@@ -871,8 +902,6 @@ public class RegExp {
 				throw new IllegalArgumentException("expected '\"' at position " + pos);
 			return makeString(b.substring(start, pos - 1));
 		} else if (match('(')) {
-			if (match(')'))
-				return makeString("");
 			RegExp e = parseUnionExp();
 			if (!match(')'))
 				throw new IllegalArgumentException("expected ')' at position " + pos);
@@ -919,6 +948,14 @@ public class RegExp {
 	}
 
 	final char parseCharExp() throws IllegalArgumentException {
+		if (peek("[()|*+?\"")
+			|| check(INTERSECTION) && peek("&")
+			|| check(ANYSTRING) && peek("@")
+			|| check(EMPTY) && peek("#")
+			|| check(COMPLEMENT) && peek("~")
+			|| (check(INTERVAL) || check(AUTOMATON)) && peek("<")) {
+			throw new IllegalArgumentException("unescaped reserved character at position " + (pos));
+		}
 		match('\\');
 		return next();
 	}
