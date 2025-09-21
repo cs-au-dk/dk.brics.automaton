@@ -255,9 +255,33 @@ final public class BasicAutomata {
 	 * Returns a new (deterministic) automaton that accepts the single given string.
 	 */
 	public static Automaton makeString(String s) {
+		return makeString(s, true);
+	}
+	
+	/** 
+	 * Returns a new (deterministic) automaton that accepts the single given string.
+	 */
+	public static Automaton makeString(String s, boolean caseSensitive) {
 		Automaton a = new Automaton();
-		a.singleton = s;
-		a.deterministic = true;
+		if (caseSensitive) {
+			a.singleton = s;
+			a.deterministic = true;
+		} else {
+			State currentStat = a.initial;
+			for (int i = 0; i < s.length(); ++i) {
+				char c = s.charAt(i);
+				State nextState = new State();
+				currentStat.transitions.add(new Transition(c, nextState));
+				if (Character.isLowerCase(c)) {
+					currentStat.transitions.add(new Transition(Character.toUpperCase(c), nextState));
+				} else if (Character.isUpperCase(c)) {
+					currentStat.transitions.add(new Transition(Character.toLowerCase(c), nextState));
+				}
+				currentStat = nextState;
+			}
+			currentStat.setAccept(true);
+			a.deterministic = true;
+		}
 		return a;
 	}
 	
@@ -438,6 +462,13 @@ final public class BasicAutomata {
 	 * Constructs deterministic automaton that matches strings that contain the given substring.
 	 */
 	public static Automaton makeStringMatcher(String s) {
+		return makeStringMatcher(s, true);
+	}
+
+	/**
+	 * Constructs deterministic automaton that matches strings that contain the given substring.
+	 */
+	public static Automaton makeStringMatcher(String s, boolean caseSensitive) {
 		Automaton a = new Automaton();
 		State[] states = new State[s.length() + 1];
 		states[0] = a.initial;
@@ -451,11 +482,29 @@ final public class BasicAutomata {
 			char c = s.charAt(i);
 			states[i].transitions.add(new Transition(c, states[i+1]));
 			done.add(c);
+			if (!caseSensitive) {
+				if (Character.isLowerCase(c)) {
+					states[i].transitions.add(new Transition(Character.toUpperCase(c), states[i + 1]));
+					done.add(Character.toUpperCase(c));
+				} else if (Character.isUpperCase(c)) {
+					states[i].transitions.add(new Transition(Character.toLowerCase(c), states[i + 1]));
+					done.add(Character.toLowerCase(c));
+				}
+			}
 			for (int j = i; j >= 1; j--) {
 				char d = s.charAt(j-1);
 				if (!done.contains(d) && s.substring(0, j-1).equals(s.substring(i-j+1, i))) {
 					states[i].transitions.add(new Transition(d, states[j]));
 					done.add(d);
+					if (!caseSensitive) {
+						if (Character.isLowerCase(d)) {
+							states[i].transitions.add(new Transition(Character.toUpperCase(d), states[j]));
+							done.add(Character.toUpperCase(d));
+						} else if (Character.isUpperCase(d)) {
+							states[i].transitions.add(new Transition(Character.toLowerCase(d), states[j]));
+							done.add(Character.toLowerCase(d));
+						}
+					}
 				}
 			}
 			char[] da = new char[done.size()];
