@@ -1,3 +1,9 @@
+Unreleased
+==========
+- include the empty word in finite-string enumeration and count it against the limit (#42)
+- honor negative finite-string limits for singleton automata
+- run JUnit 5 tests with Maven Surefire
+
 1.12-3 -> 1.12-4
 ================
 - re-enable Java 8 support - thanks to D. Lowe
