@@ -60,10 +60,22 @@ final class MatchOnlyRunAutomatonTest {
 
 		// null input
 		assertFalse(testee.matches(null));
+		// pos at end of string matches only the empty string
+		assertTrue(testee.matches("123", 3));
+		assertFalse(new MatchOnlyRunAutomaton(new RegExp("1").toAutomaton()).matches("123", 3));
+		assertFalse(new MatchOnlyRunAutomaton(new RegExp("1").toAutomaton()).matches("", 0));
 		// pos outside string
-		assertThrows(IllegalArgumentException.class, () -> testee.matches("123", 3));
+		assertThrows(IllegalArgumentException.class, () -> testee.matches("123", 4));
 		// negative pos
 		assertThrows(IllegalArgumentException.class, () -> testee.matches("123", -1));
+	}
+
+	@Test
+	void handles_empty_language() {
+		final MatchOnlyRunAutomaton testee = new MatchOnlyRunAutomaton(Automaton.makeEmpty());
+		assertFalse(testee.matches(""));
+		assertFalse(testee.matches("abc"));
+		assertFalse(testee.matches("abc", 1));
 	}
 
 	@Test

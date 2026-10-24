@@ -80,19 +80,18 @@ public class MatchOnlyRunAutomaton implements Serializable {
 
 		int len = input.length();
 
-		if (pos < 0 || (pos > len - 1 && pos != 0)) {
+		if (pos < 0 || pos > len) {
 			throw new IllegalArgumentException("pos cannot be negative or larger than the input len");
 		}
 
-		final int initial = automaton.getInitialState();
-		int state = initial;
+		int state = automaton.getInitialState();
 
 		for (int i = pos; i < len; i++) {
 			state = automaton.step(state, input.charAt(i));
 			if (state == -1) {
-				// If we fail then continue at the next char from the initial state, i.e. wildcard match
-				// from start
-				state = initial;
+				// The wildcard prefix makes the automaton total unless its language is empty,
+				// so no match is possible
+				return false;
 			} else if (state == ACCEPTED_STATE) {
 				return true;
 			}
