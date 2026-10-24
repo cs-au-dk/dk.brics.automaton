@@ -260,14 +260,18 @@ final public class BasicOperations {
 	static public Automaton minus(Automaton a1, Automaton a2) {
 		if (a1.isEmpty() || a1 == a2)
 			return BasicAutomata.makeEmpty();
-		if (a2.isEmpty())
-			return a1.cloneIfRequired();
 		if (a1.isSingleton()) {
 			if (a2.run(a1.singleton))
 				return BasicAutomata.makeEmpty();
 			else
 				return a1.cloneIfRequired();
 		}
+		if (a2.isEmpty() || !a1.isDeterministic()) {
+			a1 = a1.cloneIfRequired();
+			a1.determinize();
+		}
+		if (a2.isEmpty())
+			return a1;
 		return intersection(a1, a2.complement());
 	}
 
