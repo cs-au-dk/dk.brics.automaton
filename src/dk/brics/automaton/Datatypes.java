@@ -431,6 +431,7 @@ final public class Datatypes {
 	 * <p>Loaded automata are cached in memory.
 	 * @param name name of automaton
 	 * @return automaton
+	 * @throws IllegalArgumentException if no automaton with the given name exists
 	 */
 	public static Automaton get(String name) {
 		Automaton a = automata.get(name);
@@ -468,9 +469,11 @@ final public class Datatypes {
 	 * @return true if the automaton is available
 	 */
 	public static boolean exists(String name) {
+		URL url = Datatypes.class.getClassLoader().getResource(name + ".aut");
+		if (url == null)
+			return false;
 		try {
-			//noinspection ConstantConditions
-			Datatypes.class.getClassLoader().getResource(name + ".aut").openStream().close();
+			url.openStream().close();
 		} catch (IOException e) {
 			return false;
 		}
@@ -478,16 +481,13 @@ final public class Datatypes {
 	}
 
 	private static Automaton load(String name) {
+		URL url = Datatypes.class.getClassLoader().getResource(name + ".aut");
+		if (url == null)
+			throw new IllegalArgumentException("unknown automaton name: " + name);
 		try {
-			URL url = Datatypes.class.getClassLoader().getResource(name + ".aut");
-			//noinspection ConstantConditions
 			return Automaton.load(url.openStream());
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			return null;
+		} catch (IOException | ClassNotFoundException e) {
+			throw new RuntimeException("could not load automaton: " + name, e);
 		}
 	}
 	
