@@ -41,6 +41,49 @@ final class RegressionTest {
 	}
 
 	@Test
+	void decimal_value_lexical_forms() {
+		Automaton half = BasicAutomata.makeDecimalValue("0.5");
+		for (String s : new String[] {".5", "+.5", "0.5", "00.50", " .5 "})
+			assertTrue(half.run(s), s);
+		for (String s : new String[] {"", ".", "5", "0.05"})
+			assertFalse(half.run(s), s);
+		Automaton zero = BasicAutomata.makeDecimalValue("0");
+		for (String s : new String[] {"0", "00", "0.", "0.0", ".0", "+.00"})
+			assertTrue(zero.run(s), s);
+		for (String s : new String[] {"", ".", "+", "1"})
+			assertFalse(zero.run(s), s);
+		Automaton one = BasicAutomata.makeDecimalValue("1");
+		for (String s : new String[] {"1", "1.", "1.00", "01"})
+			assertTrue(one.run(s), s);
+		for (String s : new String[] {".1", "10", "."})
+			assertFalse(one.run(s), s);
+		Automaton neg = BasicAutomata.makeDecimalValue("-1.50");
+		for (String s : new String[] {"-1.5", "-01.500"})
+			assertTrue(neg.run(s), s);
+		assertFalse(neg.run("1.5"));
+	}
+
+	@Test
+	void zero_value_accepts_any_sign() {
+		for (String v : new String[] {"0", "-0", "+0", "-00"}) {
+			Automaton i = BasicAutomata.makeIntegerValue(v);
+			for (String s : new String[] {"0", "+0", "-0", "-00", " +0 "})
+				assertTrue(i.run(s), v + " " + s);
+			for (String s : new String[] {"", "-", "+-0", "-1"})
+				assertFalse(i.run(s), v + " " + s);
+		}
+		for (String v : new String[] {"0", "-0", "-0.0", "+.0", "-0."}) {
+			Automaton d = BasicAutomata.makeDecimalValue(v);
+			for (String s : new String[] {"0", "+0", "-0", "-0.0", "-.0", "+0.", " -.00 "})
+				assertTrue(d.run(s), v + " " + s);
+			for (String s : new String[] {"", "-", "-.", "+-0", "-0.1"})
+				assertFalse(d.run(s), v + " " + s);
+		}
+		assertFalse(BasicAutomata.makeIntegerValue("-1").run("1"));
+		assertFalse(BasicAutomata.makeDecimalValue("1.5").run("-1.5"));
+	}
+
+	@Test
 	void shortest_rejected_example_via_missing_transition() {
 		assertEquals("\u0000", new RegExp("a*").toAutomaton().getShortestExample(false));
 		assertEquals("", BasicOperations.getShortestExample(new RegExp("a|ab").toAutomaton(false), false));

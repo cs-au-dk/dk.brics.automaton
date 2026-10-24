@@ -375,15 +375,18 @@ final public class BasicAutomata {
     	}
     	StringBuilder b = new StringBuilder();
 		b.append(value.substring(i));
-		if (b.length() == 0)
+		boolean zero = b.length() == 0;
+		if (zero)
 			b.append("0");
 		Automaton s;
-		if (minus)
+		if (zero)
+			s = Automaton.makeCharSet("+-").optional();
+		else if (minus)
 			s = Automaton.makeChar('-');
 		else
 			s = Automaton.makeChar('+').optional();
 		Automaton ws = Datatypes.getWhitespaceAutomaton();
-		return Automaton.minimize(ws.concatenate(s.concatenate(Automaton.makeChar('0').repeat()).concatenate(Automaton.makeString(b.toString()))).concatenate(ws));		
+		return Automaton.minimize(ws.concatenate(s.concatenate(Automaton.makeChar('0').repeat()).concatenate(Automaton.makeString(b.toString()))).concatenate(ws));
 	}
 	
 	/**
@@ -418,20 +421,27 @@ final public class BasicAutomata {
 	    	}
 	    	b2.append(value.substring(p + 1, i + 1));
     	}
-		if (b1.length() == 0)
-			b1.append("0");
+		boolean zero = b1.length() == 0 && b2.length() == 0;
 		Automaton s;
-		if (minus)
+		if (zero)
+			s = Automaton.makeCharSet("+-").optional();
+		else if (minus)
 			s = Automaton.makeChar('-');
 		else
 			s = Automaton.makeChar('+').optional();
 		Automaton d;
 		if (b2.length() == 0)
-			d = Automaton.makeChar('.').concatenate(Automaton.makeChar('0').repeat(1)).optional();
+			d = Automaton.makeChar('.').concatenate(Automaton.makeChar('0').repeat()).optional();
 		else
 			d = Automaton.makeChar('.').concatenate(Automaton.makeString(b2.toString())).concatenate(Automaton.makeChar('0').repeat());
+		Automaton n;
+		if (zero)
+			n = Automaton.makeChar('0').repeat(1).concatenate(d)
+				.union(Automaton.makeChar('.').concatenate(Automaton.makeChar('0').repeat(1)));
+		else
+			n = Automaton.makeChar('0').repeat().concatenate(Automaton.makeString(b1.toString())).concatenate(d);
 		Automaton ws = Datatypes.getWhitespaceAutomaton();
-		return Automaton.minimize(ws.concatenate(s.concatenate(Automaton.makeChar('0').repeat()).concatenate(Automaton.makeString(b1.toString())).concatenate(d)).concatenate(ws));
+		return Automaton.minimize(ws.concatenate(s.concatenate(n)).concatenate(ws));
 	}
 	
 	/**
