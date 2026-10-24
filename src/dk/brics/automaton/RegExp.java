@@ -306,10 +306,12 @@ public class RegExp {
 		boolean b = false;
 		if (allow_mutation)
 			b = Automaton.setAllowMutate(true); // thread unsafe
-		Automaton a = toAutomaton(automata, automaton_provider, minimize);
-		if (allow_mutation)
-			Automaton.setAllowMutate(b);
-		return a;
+		try {
+			return toAutomaton(automata, automaton_provider, minimize);
+		} finally {
+			if (allow_mutation)
+				Automaton.setAllowMutate(b);
+		}
 	}
 		
 	private Automaton toAutomaton(Map<String, Automaton> automata, 
