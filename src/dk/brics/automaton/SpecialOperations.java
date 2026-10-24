@@ -29,9 +29,11 @@
 
 package dk.brics.automaton;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -132,31 +134,42 @@ final public class SpecialOperations {
 	 */
 	public static Automaton trim(Automaton a, String set, char c) {
 		a = a.cloneExpandedIfRequired();
+		Set<StatePair> epsilons = addInnerSetStates(a, set, c);
+		// add postfix
 		State f = new State();
 		addSetTransitions(f, set, f);
 		f.accept = true;
-		for (State s : a.getStates()) {
-			State r = s.step(c);
-			if (r != null) {
-				// add inner
-				State q = new State();
-				addSetTransitions(q, set, q);
-				addSetTransitions(s, set, q);
-				q.addEpsilon(r);
-			}
-			// add postfix
+		for (State s : a.getStates())
 			if (s.accept)
-				s.addEpsilon(f);
-		}
+				epsilons.add(new StatePair(s, f));
 		// add prefix
 		State p = new State();
 		addSetTransitions(p, set, p);
-		p.addEpsilon(a.initial);
+		epsilons.add(new StatePair(p, a.initial));
 		a.initial = p;
-		a.deterministic = false;
+		a.addEpsilons(epsilons);
 		a.removeDeadTransitions();
-		a.checkMinimizeAlways();
 		return a;
+	}
+
+	/**
+	 * For each transition on <code>c</code> from a state <code>s</code> to a state <code>r</code>, adds a state 
+	 * <code>q</code> with transitions on the <code>set</code> characters from <code>s</code> and <code>q</code> to 
+	 * <code>q</code>. Returns the epsilon transitions from each <code>q</code> to the corresponding <code>r</code>.
+	 */
+	private static Set<StatePair> addInnerSetStates(Automaton a, String set, char c) {
+		Set<StatePair> epsilons = new HashSet<>();
+		for (State s : a.getStates()) {
+			List<State> rs = new ArrayList<>();
+			s.step(c, rs);
+			for (State r : rs) {
+				State q = new State();
+				addSetTransitions(q, set, q);
+				addSetTransitions(s, set, q);
+				epsilons.add(new StatePair(q, r));
+			}
+		}
+		return epsilons;
 	}
 	
 	private static void addSetTransitions(State s, String set, State p) {
@@ -174,20 +187,8 @@ final public class SpecialOperations {
 	 */
 	public static Automaton compress(Automaton a, String set, char c) {
 		a = a.cloneExpandedIfRequired();
-		for (State s : a.getStates()) {
-			State r = s.step(c);
-			if (r != null) {
-				// add inner
-				State q = new State();
-				addSetTransitions(q, set, q);
-				addSetTransitions(s, set, q);
-				q.addEpsilon(r);
-			}
-		}
-		// add prefix
-		a.deterministic = false;
+		a.addEpsilons(addInnerSetStates(a, set, c));
 		a.removeDeadTransitions();
-		a.checkMinimizeAlways();
 		return a;
 	}
 	
