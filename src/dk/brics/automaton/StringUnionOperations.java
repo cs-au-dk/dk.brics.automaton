@@ -246,7 +246,6 @@ final public class StringUnionOperations {
 	 */
 	public void add(CharSequence current) {
 		assert register != null : "Automaton already built.";
-		assert current.length() > 0 : "Input sequences must not be empty.";
 		assert previous == null || LEXICOGRAPHIC_ORDER.compare(previous, current) <= 0 : 
 			"Input must be sorted: " + previous + " >= " + current;
 		assert setPrevious(current);
