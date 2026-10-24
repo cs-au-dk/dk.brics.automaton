@@ -566,6 +566,8 @@ final public class SpecialOperations {
 	 * Prefix closes the given automaton.
 	 */
 	public static void prefixClose(Automaton a) {
+		if (a.isEmpty())
+			return;
 		for (State s : a.getStates())
 			s.setAccept(true);
 		a.clearHashCode();
