@@ -132,7 +132,8 @@ public class MatchOnlyRunAutomaton implements Serializable {
 
 	private static Automaton addWildcard(final Automaton automaton) {
 		// Add a wildcard match to the start of the automaton
-		return WILDCARD_ZERO_OR_MORE.concatenate(automaton);
+		// (clone the shared static so it is not mutated when allow_mutation is set)
+		return WILDCARD_ZERO_OR_MORE.clone().concatenate(automaton);
 	}
 
 	private static final Automaton WILDCARD_ZERO_OR_MORE = new RegExp(".*").toAutomaton(true);

@@ -41,6 +41,19 @@ final class RegressionTest {
 	}
 
 	@Test
+	void hexCases_does_not_mutate_shared_whitespace_automaton() {
+		boolean b = Automaton.setAllowMutate(true);
+		try {
+			SpecialOperations.hexCases(Automaton.makeString("ab"));
+		} finally {
+			Automaton.setAllowMutate(b);
+		}
+		Automaton i = BasicAutomata.makeIntegerValue("5");
+		assertTrue(i.run("5"));
+		assertTrue(i.run(" 5 "));
+	}
+
+	@Test
 	void decimal_value_lexical_forms() {
 		Automaton half = BasicAutomata.makeDecimalValue("0.5");
 		for (String s : new String[] {".5", "+.5", "0.5", "00.50", " .5 "})
@@ -91,6 +104,13 @@ final class RegressionTest {
 	}
 
 	@Test
+	void repeat_does_not_mutate_input() {
+		Automaton a = Automaton.makeString("ab");
+		a.repeat(1, 2);
+		assertTrue(a.isSingleton());
+	}
+
+	@Test
 	void shuffle_counterexample_does_not_split_surrogate_pair() {
 		List<Automaton> ca = Arrays.asList(Automaton.makeString("x"), Automaton.makeString(PAIR));
 		Automaton a = Automaton.makeString("x" + PAIR);
@@ -112,5 +132,34 @@ final class RegressionTest {
 		List<Automaton> ca2 = Arrays.asList(Automaton.makeString("𐀀"), Automaton.makeString("y"));
 		Automaton a2 = Automaton.makeString("𐀀y").union(Automaton.makeString("y𐀀"));
 		assertNull(ShuffleOperations.shuffleSubsetOf(ca2, a2, null, null));
+	}
+
+	@Test
+	void hexCases_result_does_not_share_whitespace_automaton() {
+		boolean b = Automaton.setAllowMutate(true);
+		try {
+			SpecialOperations.hexCases(Automaton.makeString("ab")).concatenate(Automaton.makeChar('z'));
+		} finally {
+			Automaton.setAllowMutate(b);
+		}
+		Automaton i = BasicAutomata.makeIntegerValue("5");
+		assertTrue(i.run("5"));
+		assertTrue(i.run(" 5 "));
+	}
+
+	@Test
+	void integer_value_does_not_share_whitespace_automaton() {
+		int m = Automaton.minimization;
+		boolean b = Automaton.setAllowMutate(true);
+		try {
+			Automaton.setMinimization(Automaton.MINIMIZE_BRZOZOWSKI);
+			BasicAutomata.makeIntegerValue("15").concatenate(Automaton.makeChar('z'));
+		} finally {
+			Automaton.setAllowMutate(b);
+			Automaton.setMinimization(m);
+		}
+		Automaton i = BasicAutomata.makeIntegerValue("5");
+		assertTrue(i.run("5"));
+		assertTrue(i.run(" 5 "));
 	}
 }

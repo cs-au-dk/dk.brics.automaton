@@ -386,7 +386,7 @@ final public class BasicAutomata {
 		else
 			s = Automaton.makeChar('+').optional();
 		Automaton ws = Datatypes.getWhitespaceAutomaton();
-		return Automaton.minimize(ws.concatenate(s.concatenate(Automaton.makeChar('0').repeat()).concatenate(Automaton.makeString(b.toString()))).concatenate(ws));
+		return Automaton.minimize(ws.clone().concatenate(s.concatenate(Automaton.makeChar('0').repeat()).concatenate(Automaton.makeString(b.toString()))).concatenate(ws.clone()));
 	}
 	
 	/**
@@ -441,7 +441,7 @@ final public class BasicAutomata {
 		else
 			n = Automaton.makeChar('0').repeat().concatenate(Automaton.makeString(b1.toString())).concatenate(d);
 		Automaton ws = Datatypes.getWhitespaceAutomaton();
-		return Automaton.minimize(ws.concatenate(s.concatenate(n)).concatenate(ws));
+		return Automaton.minimize(ws.clone().concatenate(s.concatenate(n)).concatenate(ws.clone()));
 	}
 	
 	/**

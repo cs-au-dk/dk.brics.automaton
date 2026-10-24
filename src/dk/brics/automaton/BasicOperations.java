@@ -204,7 +204,7 @@ final public class BasicOperations {
 		if (min > max)
 			return BasicAutomata.makeEmpty();
 		max -= min;
-		a.expandSingleton();
+		a = a.cloneExpandedIfRequired();
 		Automaton b;
 		if (min == 0)
 			b = BasicAutomata.makeEmptyString();

@@ -586,7 +586,7 @@ final public class SpecialOperations {
 			map.put(c2, ws);
 		}
 		Automaton ws = Datatypes.getWhitespaceAutomaton();
-		return ws.concatenate(a.subst(map)).concatenate(ws);		
+		return ws.clone().concatenate(a.subst(map)).concatenate(ws.clone());
 	}
 	
 	/**
