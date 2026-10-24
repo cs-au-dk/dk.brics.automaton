@@ -41,6 +41,13 @@ final class RegressionTest {
 	}
 
 	@Test
+	void shortest_rejected_example_via_missing_transition() {
+		assertEquals("\u0000", new RegExp("a*").toAutomaton().getShortestExample(false));
+		assertEquals("", BasicOperations.getShortestExample(new RegExp("a|ab").toAutomaton(false), false));
+		assertNull(BasicAutomata.makeAnyString().getShortestExample(false));
+	}
+
+	@Test
 	void shuffle_counterexample_does_not_split_surrogate_pair() {
 		List<Automaton> ca = Arrays.asList(Automaton.makeString("x"), Automaton.makeString(PAIR));
 		Automaton a = Automaton.makeString("x" + PAIR);

@@ -606,6 +606,14 @@ final public class BasicOperations {
 				return "\u0000";
 
 		}
+		if (!accepted) {
+			// a string may be rejected by reaching an implicit (missing) transition,
+			// so search a deterministic, totalized copy where that dead state is explicit
+			a = a.clone();
+			if (!a.isDeterministic())
+				a.determinize();
+			a.totalize();
+		}
 		return getShortestExample(a.getInitialState(), accepted);
 	}
 
