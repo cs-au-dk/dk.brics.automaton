@@ -804,6 +804,9 @@ final public class Datatypes {
 
 		System.out.println("Building Unicode category automata...");
 		Map<String,Set<Integer>> categories = new HashMap<String,Set<Integer>>();
+		Map<String,List<Automaton>> category_ranges = new HashMap<>();
+		// Unicode.txt (derived from UnicodeData.txt) lists each of these ranges only by its first and last code point
+		Set<Integer> range_starts = new HashSet<>(Arrays.asList(0x3400, 0x4E00, 0xAC00, 0xD800, 0xDB80, 0xDC00, 0xE000, 0x20000, 0xF0000, 0x100000));
 		try {
 			StreamTokenizer st = new StreamTokenizer(new BufferedReader(new FileReader("src/Unicode.txt")));
 			st.resetSyntax();
@@ -816,19 +819,20 @@ final public class Datatypes {
 				int cp = Integer.parseInt(st.sval, 16);
 				st.nextToken();
 				String cat = st.sval;
-				Set<Integer> c = categories.get(cat);
-				if (c == null) {
-					c = new TreeSet<Integer>();
-					categories.put(cat, c);
+				Automaton range = null;
+				if (range_starts.contains(cp)) {
+					st.nextToken();
+					range = makeCodePointRange(cp, Integer.parseInt(st.sval, 16));
+					st.nextToken(); // skip the category of the last code point
 				}
-				c.add(cp);
-				String ccat = cat.substring(0, 1);
-				c = categories.get(ccat);
-				if (c == null) {
-					c = new TreeSet<Integer>();
-					categories.put(ccat, c);
+				for (String k : new String[] {cat, cat.substring(0, 1)}) {
+					// the key is added even for categories that consist of ranges only, such as Co
+					Set<Integer> c = categories.computeIfAbsent(k, x -> new TreeSet<>());
+					if (range != null)
+						category_ranges.computeIfAbsent(k, x -> new ArrayList<>()).add(range);
+					else
+						c.add(cp);
 				}
-				c.add(cp);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -846,6 +850,8 @@ final public class Datatypes {
 				}
 			}
 			la2.add(Automaton.union(la1));
+			if (category_ranges.containsKey(me.getKey()))
+				la2.addAll(category_ranges.get(me.getKey()));
 			Automaton a = Automaton.minimize(Automaton.union(la2));
 			put(automata, me.getKey(), a);
 			assigned.add(a);
@@ -855,6 +861,23 @@ final public class Datatypes {
 		put(automata, "C", automata.get("C").clone().union(cn));
 	}
 	
+	/** Returns an automaton accepting the UTF-16 representations of the code points in the given range. */
+	private static Automaton makeCodePointRange(int from, int to) {
+		if (to < 0x10000)
+			return Automaton.makeCharRange((char)from, (char)to);
+		if (from < 0x10000)
+			return makeCodePointRange(from, 0xFFFF).union(makeCodePointRange(0x10000, to));
+		char h1 = (char)(0xd800 + ((from - 0x10000) >> 10)), l1 = (char)(0xdc00 + ((from - 0x10000) & 0x3ff));
+		char h2 = (char)(0xd800 + ((to - 0x10000) >> 10)), l2 = (char)(0xdc00 + ((to - 0x10000) & 0x3ff));
+		if (h1 == h2)
+			return Automaton.makeChar(h1).concatenate(Automaton.makeCharRange(l1, l2));
+		Automaton a = Automaton.makeChar(h1).concatenate(Automaton.makeCharRange(l1, '\udfff'))
+				.union(Automaton.makeChar(h2).concatenate(Automaton.makeCharRange('\udc00', l2)));
+		if (h1 + 1 < h2)
+			a = a.union(Automaton.makeCharRange((char)(h1 + 1), (char)(h2 - 1)).concatenate(Automaton.makeCharRange('\udc00', '\udfff')));
+		return a;
+	}
+
 	private static Automaton makeCodePoint(int cp) {
 		if (cp >= 0x10000) {
 			cp -= 0x10000;
