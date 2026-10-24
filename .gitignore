@@ -3,8 +3,7 @@
 /target
 /dist
 /doc
-/.idea/workspace.xml
-/.idea/kotlinc.xml
+/.idea/
 *.iml
 .settings*
 .classpath

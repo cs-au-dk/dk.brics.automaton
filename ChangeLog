@@ -1,3 +1,9 @@
+1.12-4 -> 1.13-1
+================
+- getFiniteStrings now includes the empty string and honors negative limits for singleton automata - reported by A. Omori, fixed by J. Park
+- fixed year format in XML Schema date/time datatypes - thanks to S. Gregersen
+- build updates
+
 1.12-3 -> 1.12-4
 ================
 - re-enable Java 8 support - thanks to D. Lowe
