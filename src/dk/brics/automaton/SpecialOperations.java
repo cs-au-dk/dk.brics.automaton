@@ -375,12 +375,13 @@ final public class SpecialOperations {
 				cc[i] = c[i];
 		Arrays.sort(cc);
 		if (a.isSingleton()) {
+			StringBuilder b = new StringBuilder();
 			for (int i = 0; i < a.singleton.length(); i++) {
 				char sc = a.singleton.charAt(i);
-				if (!(normalchars && (sc <= '\udfff' || sc >= '\uf900') || Arrays.binarySearch(cc, sc) >= 0))
-					return BasicAutomata.makeEmpty();
+				if (normalchars && (sc <= '\udfff' || sc >= '\uf900') || Arrays.binarySearch(cc, sc) >= 0)
+					b.append(sc);
 			}
-			return a.cloneIfRequired();
+			return BasicAutomata.makeString(b.toString());
 		} else {
 			HashSet<StatePair> epsilons = new HashSet<StatePair>();
 			a = a.cloneExpandedIfRequired();
