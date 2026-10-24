@@ -101,7 +101,7 @@
         </executions>
         <configuration>
           <source>8</source>
-          <doclint>none</doclint>
+          <doclint>all,-missing</doclint>
           <nodeprecated>true</nodeprecated>
           <notree>true</notree>
           <nohelp>true</nohelp>

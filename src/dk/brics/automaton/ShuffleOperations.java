@@ -52,7 +52,6 @@ final public class ShuffleOperations {
 	 * Never modifies the input automata languages.
 	 * <p>
 	 * Complexity: quadratic in number of states (if already deterministic). 
-	 * <p>
 	 * <dl><dt><b>Author:</b></dt><dd>Torben Ruby 
 	 * &lt;<a href="mailto:ruby@daimi.au.dk">ruby@daimi.au.dk</a>&gt;</dd></dl>
 	 */

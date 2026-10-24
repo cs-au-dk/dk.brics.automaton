@@ -72,7 +72,7 @@
 			notree="true" 
 			nohelp="true" 
 			windowtitle="dk.brics.automaton"
-			additionalparam="-Xdoclint:none">
+			additionalparam="-Xdoclint:all,-missing">
 			<doctitle><![CDATA[dk.brics.automaton<br>API Specification]]></doctitle>
 			<bottom><![CDATA[<i> Copyright &#169; 2001-2022 Anders M&oslash;ller. </i>]]></bottom>
 			<link href="https://docs.oracle.com/javase/8/docs/api/" />
