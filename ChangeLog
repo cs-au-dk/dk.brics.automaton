@@ -1,8 +1,37 @@
 1.12-4 -> 1.13-1
 ================
-- getFiniteStrings now includes the empty string and honors negative limits for singleton automata - reported by A. Omori, fixed by J. Park
+- added MatchOnlyRunAutomaton for fast substring matching - contributed by J. McCartney
+- RegExp allows empty union/intersection branches, e.g. "(|a)", and rejects unescaped reserved characters, e.g. "*a" - contributed by D. Robertson
+- fixed getFiniteStrings omitting the empty string and returning null for singleton automata with negative limits - reported by A. Omori, fixed by J. Park
 - fixed year format in XML Schema date/time datatypes - thanks to S. Gregersen
+- fixed getShortestExample for rejected strings
+- fixed surrogate pair handling in shuffleSubsetOf
+- fixed makeDecimalValue to accept all valid lexical forms, e.g. ".5" and "1."
+- fixed makeIntegerValue and makeDecimalValue to accept any sign for zero, e.g. "-0" and "+0.0"
+- fixed U+FEFF missing from the Specials block in Datatypes
+- fixed unintended mutation of inputs or shared automata
+- fixed RegExp.toString to escape ~ and to print negated character classes as [^...]
+- fixed shuffleSubsetOf counterexamples that split surrogate pairs or suspended regions
+- fixed toAutomatonAllowMutate leaving the mutation flag set on exceptions
+- fixed NullPointerException in Datatypes.exists and Datatypes.get for unknown names (get now throws IllegalArgumentException)
+- fixed Automaton.load losing transitions of some automata, e.g. non-minimized automata from regular expressions
+- fixed isTotal for non-minimal automata
+- fixed minus to always return a deterministic automaton as documented
+- fixed complement not minimizing its result when minimize-always is set
+- fixed equals after SpecialOperations.reverse and setInitialState (stale hash code)
+- fixed compress and trim missing strings, in particular for nondeterministic automata
+- fixed prefixClose for the empty language
+- fixed projectChars for singleton automata
+- fixed RegExp.toString for numerical intervals without a fixed number of digits
+- fixed makeStringUnion failing with assertions enabled if the empty string is included
+- fixed makeMinInteger rejecting larger numbers with more digits, e.g. 10 for minimum 3
+- fixed makeMaxInteger accepting the empty string for maximum 0
+- fixed makeTotalDigits and makeFractionDigits for decimals without integer digits, e.g. ".5"
+- fixed Unicode category automata missing code points in ranges, e.g. most CJK ideographs and Hangul syllables
+- fixed gDay datatype to require three leading hyphens
+- fixed XML Schema integer datatypes to accept a plus sign and leading zeros, and decimal and float to accept e.g. "1." and ".5"
 - build updates
+- added randomized and metamorphic tests of all operations
 
 1.12-3 -> 1.12-4
 ================
