@@ -162,4 +162,20 @@ final class RegressionTest {
 		assertTrue(i.run("5"));
 		assertTrue(i.run(" 5 "));
 	}
+
+	@Test
+	void regexp_toString_of_negated_char_class_without_syntax_flags() {
+		for (String s : new String[] {"[^b]", "x[^a-c\\]-]y", "[^^]*"}) {
+			RegExp r = new RegExp(s, RegExp.NONE);
+			assertEquals(r.toAutomaton(), new RegExp(r.toString(), RegExp.NONE).toAutomaton(), s + " -> " + r);
+		}
+	}
+
+	@Test
+	void regexp_toString_escapes_tilde() {
+		RegExp r = new RegExp("\\~a");
+		Automaton a = new RegExp(r.toString()).toAutomaton();
+		assertTrue(a.run("~a"));
+		assertFalse(a.run("b"));
+	}
 }

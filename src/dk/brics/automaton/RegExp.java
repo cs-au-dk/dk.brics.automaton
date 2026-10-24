@@ -437,6 +437,12 @@ public class RegExp {
 			exp2.toStringBuilder(b);
 			break;
 		case REGEXP_INTERSECTION:
+			if (exp1.kind == Kind.REGEXP_ANYCHAR && exp2.kind == Kind.REGEXP_COMPLEMENT && exp2.exp1.isCharClass()) {
+				b.append("[^");
+				exp2.exp1.charClassToStringBuilder(b);
+				b.append("]");
+				break;
+			}
 			b.append("(");
 			exp1.toStringBuilder(b);
 			b.append("&");
@@ -498,6 +504,9 @@ public class RegExp {
 		case REGEXP_INTERVAL:
 			String s1 = Integer.toString(min);
 			String s2 = Integer.toString(max);
+			// end points of equal length are parsed as a fixed number of digits, so add a leading zero if not fixed
+			if (digits <= 0 && s1.length() == s2.length())
+				s1 = "0" + s1;
 			b.append("<");
 			if (digits > 0)
 				for (int i = s1.length(); i < digits; i++)
@@ -512,8 +521,34 @@ public class RegExp {
 		return b;
 	}
 
+	private boolean isCharClass() {
+		switch (kind) {
+		case REGEXP_CHAR:
+		case REGEXP_CHAR_RANGE:
+			return true;
+		case REGEXP_UNION:
+			return exp1.isCharClass() && exp2.isCharClass();
+		default:
+			return false;
+		}
+	}
+
+	private void charClassToStringBuilder(StringBuilder b) {
+		switch (kind) {
+		case REGEXP_CHAR:
+			b.append("\\").append(c);
+			break;
+		case REGEXP_CHAR_RANGE:
+			b.append("\\").append(from).append("-\\").append(to);
+			break;
+		default: // REGEXP_UNION
+			exp1.charClassToStringBuilder(b);
+			exp2.charClassToStringBuilder(b);
+		}
+	}
+
 	private void appendChar(char c, StringBuilder b) {
-		if ("|&?*+{},![]^-.#@\"()<>\\".indexOf(c) != -1) {
+		if ("|&?*+{},![]^-.#@\"()<>\\~".indexOf(c) != -1) {
 			b.append("\\");
 		}
 		b.append(c);
