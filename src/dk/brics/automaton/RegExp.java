@@ -571,7 +571,7 @@ public class RegExp {
 	 * Returns set of automaton identifiers that occur in this regular expression. 
 	 */
 	public Set<String> getIdentifiers() {
-		HashSet<String> set = new HashSet<String>();
+		HashSet<String> set = new HashSet<>();
 		getIdentifiers(set);
 		return set;
 	}

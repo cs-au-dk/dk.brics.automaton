@@ -233,9 +233,9 @@ final public class Datatypes {
 	static {
 		automata = new HashMap<String,Automaton>();
 		ws = Automaton.minimize(Automaton.makeCharSet(" \t\n\r").repeat());
-		unicodeblock_names = new HashSet<String>(Arrays.asList(unicodeblock_names_array));
-		unicodecategory_names = new HashSet<String>(Arrays.asList(unicodecategory_names_array));
-		xml_names = new HashSet<String>(Arrays.asList(xml_names_array));
+		unicodeblock_names = new HashSet<>(Arrays.asList(unicodeblock_names_array));
+		unicodecategory_names = new HashSet<>(Arrays.asList(unicodecategory_names_array));
+		xml_names = new HashSet<>(Arrays.asList(xml_names_array));
 	}
 	
 	private Datatypes() {}

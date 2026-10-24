@@ -99,7 +99,7 @@ final public class BasicOperations {
 			for (Automaton a : l)
 				if (a.isEmpty())
 					return BasicAutomata.makeEmpty();
-			Set<Integer> ids = new HashSet<Integer>();
+			Set<Integer> ids = new HashSet<>();
 			for (Automaton a : l)
 				ids.add(System.identityHashCode(a));
 			boolean has_aliases = ids.size() != l.size();
@@ -418,7 +418,7 @@ final public class BasicOperations {
 	 * Complexity: linear in number of states.
 	 */
 	public static Automaton union(Collection<Automaton> l) {
-		Set<Integer> ids = new HashSet<Integer>();
+		Set<Integer> ids = new HashSet<>();
 		for (Automaton a : l)
 			ids.add(System.identityHashCode(a));
 		boolean has_aliases = ids.size() != l.size();

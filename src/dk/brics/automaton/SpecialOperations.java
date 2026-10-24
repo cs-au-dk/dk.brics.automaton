@@ -453,7 +453,7 @@ final public class SpecialOperations {
 	 * Returns the set of accepted strings of the given length.
 	 */
 	public static Set<String> getStrings(Automaton a, int length) {
-		HashSet<String> strings = new HashSet<String>();
+		HashSet<String> strings = new HashSet<>();
 		if (a.isSingleton() && a.singleton.length() == length)
 			strings.add(a.singleton);
 		else if (length >= 0)
@@ -482,7 +482,7 @@ final public class SpecialOperations {
 	 * the running time may be exponential in the number of states, so consider determinizing first.
 	 */
 	public static Set<String> getFiniteStrings(Automaton a) {
-		HashSet<String> strings = new HashSet<String>();
+		HashSet<String> strings = new HashSet<>();
 		if (a.isSingleton())
 			strings.add(a.singleton);
 		else if (!getFiniteStrings(a.initial, new HashSet<State>(), strings, new StringBuilder(), -1))
@@ -500,7 +500,7 @@ final public class SpecialOperations {
 	 * the running time may be exponential in the number of states, so consider determinizing first.
 	 */
 	public static Set<String> getFiniteStrings(Automaton a, int limit) {
-		HashSet<String> strings = new HashSet<String>();
+		HashSet<String> strings = new HashSet<>();
 		if (a.isSingleton()) {
 			if (limit != 0)
 				strings.add(a.singleton);
