@@ -128,7 +128,8 @@ public class State implements Serializable, Comparable<State> {
 	void addEpsilon(State to) {
 		if (to.accept)
 			accept = true;
-		transitions.addAll(to.transitions);
+		for (Transition t : to.transitions)
+			transitions.add(new Transition(t.min, t.max, t.to));
 	}
 	
 	/** Returns transitions sorted by (min, reverse max, to) or (to, min, reverse max) */
