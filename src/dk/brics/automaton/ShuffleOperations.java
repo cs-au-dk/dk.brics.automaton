@@ -108,7 +108,8 @@ final public class ShuffleOperations {
 	 * exists, null is returned. As a side-effect, <code>a</code> is determinized, 
 	 * if not already deterministic. Only interleavings that respect
 	 * the suspend/resume markers (two BMP private code points) are considered if the markers are non-null. 
-	 * Also, interleavings never split surrogate pairs.
+	 * Also, interleavings never split surrogate pairs (a high surrogate immediately followed by 
+	 * a low surrogate in the same string).
 	 * <p>
 	 * Complexity: proportional to the product of the numbers of states (if <code>a</code>
 	 * is already deterministic).
@@ -161,10 +162,13 @@ final public class ShuffleOperations {
 				return sb2.toString();
 			}
 			Transition[] ta2 = a_transitions[c.a_state.number];
+			// after a high surrogate, the other automata may proceed (committing to an unpaired high surrogate)
+			// unless shuffling was already suspended
+			boolean restricted = c.shuffle_suspended && !(c.surrogate && !c.outer_shuffle_suspended);
 			for (int i1 = 0; i1 < ca.size(); i1++) {
-				if (c.shuffle_suspended)
+				if (restricted)
 					i1 = c.suspended1;
-				loop: for (Transition t1 : ca_transitions[i1][c.ca_states[i1].number]) {
+				loop: for (Transition t1 : allowedTransitions(ca_transitions[i1][c.ca_states[i1].number], c.nolow[i1])) {
 					List<Transition> lt = new ArrayList<Transition>();
 					int j = Arrays.binarySearch(ta2, t1, tc);
 					if (j < 0)
@@ -205,19 +209,67 @@ final public class ShuffleOperations {
 					StringBuilder sb2 = new StringBuilder();
 					for (int m = sb.length() - 1; m >= 0; m--)
 						sb2.append(sb.charAt(m));
-					if (c.shuffle_suspended)
-						sb2.append(BasicOperations.getShortestExample(nc.ca_states[c.suspended1], true));
-					for (i1 = 0; i1 < ca.size(); i1++)
-						if (!c.shuffle_suspended || i1 != c.suspended1)
-							sb2.append(BasicOperations.getShortestExample(nc.ca_states[i1], true));
+					int first = c.shuffle_suspended ? c.suspended1 : -1;
+					if ((suspend_shuffle != null && min == suspend_shuffle) || Character.isHighSurrogate(min))
+						first = i1;
+					for (int k = -1; k < ca.size(); k++) {
+						int k1 = k < 0 ? first : k;
+						if (k1 < 0 || (k >= 0 && k == first))
+							continue;
+						String s = getShortestExample(nc.ca_states[k1], nc.nolow[k1]);
+						if (s == null)
+							continue loop; // no valid completion
+						sb2.append(s);
+					}
 					return sb2.toString();
 				}
-				if (c.shuffle_suspended)
+				if (restricted)
 					break;
 			}
 		}
 		return null;
 	}
+
+	/**
+	 * Returns the given transitions, excluding low surrogates if <code>nolow</code> is set.
+	 */
+	private static Transition[] allowedTransitions(Transition[] ts, boolean nolow) {
+		if (!nolow)
+			return ts;
+		List<Transition> lt = new ArrayList<Transition>();
+		for (Transition t : ts)
+			if (t.max < LOW_SURROGATE_BEGIN || t.min > LOW_SURROGATE_END)
+				lt.add(t);
+			else {
+				if (t.min < LOW_SURROGATE_BEGIN)
+					lt.add(new Transition(t.min, (char)(LOW_SURROGATE_BEGIN - 1), t.to));
+				if (t.max > LOW_SURROGATE_END)
+					lt.add(new Transition((char)(LOW_SURROGATE_END + 1), t.max, t.to));
+			}
+		return lt.toArray(new Transition[lt.size()]);
+	}
+
+	/**
+	 * Returns a shortest string accepted from the given state, not starting with a low surrogate 
+	 * if <code>nolow</code> is set, or null if none exists.
+	 */
+	private static String getShortestExample(State s, boolean nolow) {
+		if (!nolow || s.accept)
+			return BasicOperations.getShortestExample(s, true);
+		String best = null;
+		for (Transition t : allowedTransitions(s.getSortedTransitions(false).toArray(new Transition[0]), true)) {
+			String r = BasicOperations.getShortestExample(t.to, true);
+			if (r != null) {
+				r = t.min + r;
+				if (best == null || r.length() < best.length() || (r.length() == best.length() && r.compareTo(best) < 0))
+					best = r;
+			}
+		}
+		return best;
+	}
+
+	private static final char LOW_SURROGATE_BEGIN = '\uDC00';
+	private static final char LOW_SURROGATE_END = '\uDFFF';
 
 	private static void add(Character suspend_shuffle, Character resume_shuffle, 
 			                LinkedList<ShuffleConfiguration> pending, Set<ShuffleConfiguration> visited, 
@@ -249,11 +301,14 @@ final public class ShuffleOperations {
 				nc.suspended1 = i1;
 			} else if (resume_shuffle != null && min == resume_shuffle)
 				nc.shuffle_suspended = false;
-			if (min >= HIGH_SURROGATE_BEGIN && min <= HIGH_SURROGATE_BEGIN) {
+			if (min >= HIGH_SURROGATE_BEGIN && min <= HIGH_SURROGATE_END) {
+				nc.outer_shuffle_suspended = nc.shuffle_suspended;
+				nc.outer_suspended1 = nc.suspended1;
 				nc.shuffle_suspended = true;
 				nc.suspended1 = i1;
 				nc.surrogate = true;
 			}
+			nc.computeHash();
 			if (!visited.contains(nc)) {
 				pending.add(nc);
 				visited.add(nc);
@@ -271,6 +326,9 @@ final public class ShuffleOperations {
 		boolean shuffle_suspended;
 		boolean surrogate;
 		int suspended1;
+		boolean outer_shuffle_suspended;
+		int outer_suspended1;
+		boolean[] nolow; // automata that have committed to not continuing with a low surrogate
 		
 		@SuppressWarnings("unused")
 		private ShuffleConfiguration() {}
@@ -281,6 +339,7 @@ final public class ShuffleOperations {
 			for (Automaton a1 : ca)
 				ca_states[i++] = a1.getInitialState();
 			a_state = a.getInitialState();
+			nolow = new boolean[ca_states.length];
 			computeHash();
 		}
 		
@@ -290,6 +349,7 @@ final public class ShuffleOperations {
 			a_state = c.a_state;
 			ca_states[i1] = s1;
 			this.min = min;
+			setNolow(c, i1);
 			computeHash();
 		}
 
@@ -300,11 +360,22 @@ final public class ShuffleOperations {
 			ca_states[i1] = s1;
 			a_state = s2;
 			this.min = min;
-			if (!surrogate) {
+			if (c.surrogate) {
+				shuffle_suspended = c.outer_shuffle_suspended;
+				suspended1 = c.outer_suspended1;
+			} else {
 				shuffle_suspended = c.shuffle_suspended;
 				suspended1 = c.suspended1;
 			}
+			setNolow(c, i1);
 			computeHash();
+		}
+
+		private void setNolow(ShuffleConfiguration c, int i1) {
+			nolow = c.nolow.clone();
+			nolow[i1] = false;
+			if (c.surrogate && i1 != c.suspended1)
+				nolow[c.suspended1] = true; // the high surrogate is unpaired
 		}
 
 		@Override
@@ -314,7 +385,10 @@ final public class ShuffleOperations {
 				return shuffle_suspended == c.shuffle_suspended &&
 					   surrogate == c.surrogate &&
 					   suspended1 == c.suspended1 &&
+					   (!surrogate || (outer_shuffle_suspended == c.outer_shuffle_suspended &&
+					                   outer_suspended1 == c.outer_suspended1)) &&
 					   Arrays.equals(ca_states, c.ca_states) &&
+					   Arrays.equals(nolow, c.nolow) &&
 					   a_state == c.a_state;
 			}
 			return false;
@@ -330,6 +404,7 @@ final public class ShuffleOperations {
 			for (int i = 0; i < ca_states.length; i++)
 				hash ^= ca_states[i].hashCode();
 			hash ^= a_state.hashCode() * 100;
+			hash ^= Arrays.hashCode(nolow);
 			if (shuffle_suspended || surrogate)
 				hash += suspended1;
 		}
