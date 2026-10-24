@@ -289,10 +289,11 @@ final public class BasicAutomata {
 		while (i < n.length() && n.charAt(i) == '0')
 			i++;
 		StringBuilder b = new StringBuilder();
-		b.append("0*(0|");
-		if (i < n.length())
-			b.append("[0-9]{1,").append(n.length() - i - 1).append("}|");
-		maxInteger(n.substring(i), 0, b);
+		b.append("0*(0");
+		if (i < n.length()) {
+			b.append("|[0-9]{1,").append(n.length() - i - 1).append("}|");
+			maxInteger(n.substring(i), 0, b);
+		}
 		b.append(")");
 		return Automaton.minimize((new RegExp(b.toString())).toAutomaton());
 	}
@@ -319,9 +320,10 @@ final public class BasicAutomata {
 		while (i + 1 < n.length() && n.charAt(i) == '0')
 			i++;
 		StringBuilder b = new StringBuilder();
-		b.append("0*");
+		b.append("0*(");
 		minInteger(n.substring(i), 0, b);
-		b.append("[0-9]*");
+		// or more significant digits
+		b.append("|[1-9][0-9]{").append(n.length() - i).append(",})");
 		return Automaton.minimize((new RegExp(b.toString())).toAutomaton());
 	}
 	
@@ -344,7 +346,7 @@ final public class BasicAutomata {
 	 * @param i max number of necessary digits
 	 */
 	public static Automaton makeTotalDigits(int i) {
-		return Automaton.minimize((new RegExp("[ \t\n\r]*[-+]?0*([0-9]{0," + i + "}|((([0-9]\\.*){0," + i + "})&@\\.@)0*)[ \t\n\r]*")).toAutomaton());
+		return Automaton.minimize((new RegExp("[ \t\n\r]*[-+]?0*([0-9]{0," + i + "}|([0-9]*\\.[0-9]*&[0-9.]{0," + (i + 1) + "})0*)[ \t\n\r]*")).toAutomaton());
 	}
 	
 	/**
@@ -354,7 +356,7 @@ final public class BasicAutomata {
 	 * @param i max number of necessary fraction digits
 	 */
 	public static Automaton makeFractionDigits(int i) {
-		return Automaton.minimize((new RegExp("[ \t\n\r]*[-+]?[0-9]+(\\.[0-9]{0," + i + "}0*)?[ \t\n\r]*")).toAutomaton());
+		return Automaton.minimize((new RegExp("[ \t\n\r]*[-+]?[0-9]*(\\.[0-9]{0," + i + "}0*)?[ \t\n\r]*")).toAutomaton());
 	}
 	
 	/**
