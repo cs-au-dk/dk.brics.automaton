@@ -579,15 +579,35 @@ final public class BasicOperations {
 	
 	/**
 	 * Returns true if the given automaton accepts all strings.
+	 * <p>
+	 * Complexity: linear in number of states if deterministic, otherwise exponential.
 	 */
 	public static boolean isTotal(Automaton a) {
 		if (a.isSingleton())
 			return false;
 		if (a.initial.accept && a.initial.transitions.size() == 1) {
 			Transition t = a.initial.transitions.iterator().next();
-			return t.to == a.initial && t.min == Character.MIN_VALUE && t.max == Character.MAX_VALUE;
+			if (t.to == a.initial && t.min == Character.MIN_VALUE && t.max == Character.MAX_VALUE)
+				return true;
 		}
-		return false;
+		if (!a.isDeterministic()) {
+			a = a.clone();
+			a.determinize();
+		}
+		for (State s : a.getStates()) {
+			if (!s.accept)
+				return false;
+			int next = Character.MIN_VALUE;
+			for (Transition t : s.getSortedTransitions(false)) {
+				if (t.min > next)
+					return false;
+				if (t.max + 1 > next)
+					next = t.max + 1;
+			}
+			if (next <= Character.MAX_VALUE)
+				return false;
+		}
+		return true;
 	}
 	
 	/**
