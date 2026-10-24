@@ -67,6 +67,7 @@ final public class SpecialOperations {
 		for (State r : accept)
 			a.initial.addEpsilon(r); // ensures that all initial states are reachable
 		a.deterministic = false;
+		a.clearHashCode();
 		return accept;
 	}
 

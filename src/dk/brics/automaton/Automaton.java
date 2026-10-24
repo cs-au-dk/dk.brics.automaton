@@ -218,6 +218,7 @@ public class Automaton implements Serializable, Cloneable {
 	public void setInitialState(State s) {
 		initial = s;
 		singleton = null;
+		clearHashCode();
 	}
 	
 	/** 
