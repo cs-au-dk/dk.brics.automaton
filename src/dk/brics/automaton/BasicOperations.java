@@ -246,6 +246,7 @@ final public class BasicOperations {
 		for (State p : a.getStates())
 			p.accept = !p.accept;
 		a.removeDeadTransitions();
+		a.checkMinimizeAlways();
 		return a;
 	}
 
