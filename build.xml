@@ -15,12 +15,16 @@
 
 	<target name="compile">
 		<mkdir dir="antbuild" />
-		<javac srcdir="src" destdir="antbuild" source="1.8" target="1.8" optimize="${optimize}" debug="${debug}" includeantruntime="false" />
+		<javac srcdir="src" destdir="antbuild" source="1.8" target="1.8" release="8" optimize="${optimize}" debug="${debug}" includeantruntime="false" />
 	</target>
 
 	<target name="jar" depends="compile,datatypes">
 		<mkdir dir="dist" />
-		<jar jarfile="dist/${project}.jar" basedir="antbuild" includes="dk/**/*.class,*.aut" />
+		<jar jarfile="dist/${project}.jar" basedir="antbuild" includes="dk/**/*.class,*.aut">
+			<manifest>
+				<attribute name="Automatic-Module-Name" value="dk.brics.automaton" />
+			</manifest>
+		</jar>
 	</target>
 
 	<target name="clean">
@@ -36,7 +40,7 @@
 	</dependset>
 
 	<target name="datatypes" depends="compile">
-		<java classname="dk.brics.automaton.Datatypes" classpath="antbuild">
+		<java classname="dk.brics.automaton.Datatypes" classpath="antbuild" fork="true">
 			<sysproperty key="dk.brics.automaton.datatypes" value="antbuild"/>
 		</java>
 	</target>
@@ -66,6 +70,7 @@
 		<mkdir dir="doc" />
 		<javadoc packagenames="dk.brics.automaton" 
 			sourcepath="src" 
+			source="8"
 			destdir="doc" 
 			nodeprecated="true" 
 			author="true" 
@@ -75,7 +80,6 @@
 			additionalparam="-Xdoclint:all,-missing">
 			<doctitle><![CDATA[dk.brics.automaton<br>API Specification]]></doctitle>
 			<bottom><![CDATA[<i> Copyright &#169; 2001-2022 Anders M&oslash;ller. </i>]]></bottom>
-			<link href="https://docs.oracle.com/javase/8/docs/api/" />
 		</javadoc>
 	</target>
 
