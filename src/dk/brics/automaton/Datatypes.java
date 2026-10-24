@@ -638,8 +638,8 @@ final public class Datatypes {
 		};
 		String[] xsdexps = {
 				"boolean", "<_>(true|false|1|0)<_>",
-				"decimal", "<_>([-+]?<d>+(\\.<d>+)?)<_>",
-				"float", "<_>([-+]?<d>+(\\.<d>+)?([Ee][-+]?<d>+)?|INF|-INF|NaN)<_>",
+				"decimal", "<_>([-+]?(<d>+(\\.<d>*)?|\\.<d>+))<_>",
+				"float", "<_>([-+]?(<d>+(\\.<d>*)?|\\.<d>+)([Ee][-+]?<d>+)?|INF|-INF|NaN)<_>",
 				"integer", "<_>[-+]?[0-9]+<_>",
 				"duration", "<_>(-?P(((<d>+Y)?(<d>+M)?(<d>+D)?(T(((<d>+H)?(<d>+M)?(<d>+(\\.<d>+)?S)?)&~()))?)&~()))<_>",
 				"dateTime", "<_>(-?<Y>-<M>-<D>T<T>(\\.<d>+)?<Z>?)<_>",
@@ -648,15 +648,15 @@ final public class Datatypes {
 				"gYearMonth", "<_>(-?<Y>-<M><Z>?)<_>",
 				"gYear", "<_>(-?<Y><Z>?)<_>",
 				"gMonthDay", "<_>(--<M>-<D><Z>?)<_>",
-				"gDay", "<_>(--<D><Z>?)<_>",
+				"gDay", "<_>(---<D><Z>?)<_>",
 				"gMonth", "<_>(--<M><Z>?)<_>",
 				"hexBinary", "<_>([0-9a-fA-F]{2}*)<_>",
 				"base64Binary",	"<_>(((<B64S><B64S><B64S><B64S>)*((<B64S><B64S><B64S><B64>)|(<B64S><B64S><B16S>=)|(<B64S><B04S>= ?=)))?)<_>",
 				"language", "<_>[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*<_>",
-				"nonPositiveInteger", "<_>(0+|-<d>+)<_>",
-				"negativeInteger", "<_>(-[1-9]<d>*)<_>",
-				"nonNegativeInteger", "<_>(<d>+)<_>",
-				"positiveInteger", "<_>([1-9]<d>*)<_>",
+				"nonPositiveInteger", "<_>(\\+?0+|-<d>+)<_>",
+				"negativeInteger", "<_>(-0*[1-9]<d>*)<_>",
+				"nonNegativeInteger", "<_>(\\+?<d>+|-0+)<_>",
+				"positiveInteger", "<_>(\\+?0*[1-9]<d>*)<_>",
 		};
 		System.out.println("Building XML Schema automata...");
 		Map<String,Automaton> m = buildMap(xsdmisc);
@@ -686,14 +686,14 @@ final public class Datatypes {
 				"Nmtokens", "<_>(<Nmtoken><_>)+",
 				"NCNames", "<_>(<NCName><_>)+",
 				"Names", "<_>(<Name><_>)+",
-				"unsignedLong", "<_><UNSIGNEDLONG><_>",
-				"unsignedInt", "<_><UNSIGNEDINT><_>",
-				"unsignedShort", "<_><UNSIGNEDSHORT><_>",
-				"unsignedByte", "<_><UNSIGNEDBYTE><_>",
-				"long", "<_>(<LONG>|-<LONG_NEG>)<_>",
-				"int", "<_>(<INT>|-<INT_NEG>)<_>",
-				"short", "<_>(<SHORT>|-<SHORT_NEG>)<_>",
-				"byte", "<_>(<BYTE>|-<BYTE_NEG>)<_>",
+				"unsignedLong", "<_>(\\+?<UNSIGNEDLONG>|-0+)<_>",
+				"unsignedInt", "<_>(\\+?<UNSIGNEDINT>|-0+)<_>",
+				"unsignedShort", "<_>(\\+?<UNSIGNEDSHORT>|-0+)<_>",
+				"unsignedByte", "<_>(\\+?<UNSIGNEDBYTE>|-0+)<_>",
+				"long", "<_>(\\+?<LONG>|-<LONG_NEG>)<_>",
+				"int", "<_>(\\+?<INT>|-<INT_NEG>)<_>",
+				"short", "<_>(\\+?<SHORT>|-<SHORT_NEG>)<_>",
+				"byte", "<_>(\\+?<BYTE>|-<BYTE_NEG>)<_>",
 				"string", "<Char>*"
 		};
 		putWith(xsdexps2, u);
