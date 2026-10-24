@@ -780,9 +780,8 @@ final public class Datatypes {
 		put(automata, "CJKCompatibilityForms", Automaton.makeCharRange('\uFE30', '\uFE4F'));
 		put(automata, "SmallFormVariants", Automaton.makeCharRange('\uFE50', '\uFE6F'));
 		put(automata, "ArabicPresentationForms-B", Automaton.makeCharRange('\uFE70', '\uFEFE'));
-		put(automata, "Specials", Automaton.makeCharRange('\uFEFF', '\uFEFF'));
 		put(automata, "HalfwidthandFullwidthForms", Automaton.makeCharRange('\uFF00', '\uFFEF'));
-		put(automata, "Specials", Automaton.makeCharRange('\uFFF0', '\uFFFD'));
+		put(automata, "Specials", Automaton.makeCharRange('\uFEFF', '\uFEFF').union(Automaton.makeCharRange('\uFFF0', '\uFFFD')));
 
 		put(automata, "OldItalic", Automaton.makeChar('\ud800').concatenate(Automaton.makeCharRange('\udf00', '\udf2f')));
 		put(automata, "Gothic", Automaton.makeChar('\ud800').concatenate(Automaton.makeCharRange('\udf30', '\udf4f')));
