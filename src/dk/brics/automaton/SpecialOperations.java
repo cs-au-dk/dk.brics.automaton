@@ -434,7 +434,7 @@ final public class SpecialOperations {
 	
 	/** 
 	 * Checks whether there is a loop containing s. (This is sufficient since 
-	 * there are never transitions to dead states.) 
+	 * there are never transitions to dead states, see {@link Automaton#restoreInvariant()}.) 
 	 */
 	private static boolean isFinite(State s, HashSet<State> path, HashSet<State> visited) {
 		path.add(s);
@@ -474,6 +474,9 @@ final public class SpecialOperations {
 	/**
 	 * Returns the set of accepted strings, assuming this automaton has a finite
 	 * language. If the language is not finite, null is returned.
+	 * <p>
+	 * Complexity: efficient on deterministic automata; on nondeterministic automata, 
+	 * the running time may be exponential in the number of states, so consider determinizing first.
 	 */
 	public static Set<String> getFiniteStrings(Automaton a) {
 		HashSet<String> strings = new HashSet<String>();
@@ -489,11 +492,14 @@ final public class SpecialOperations {
 	 * strings are accepted. If more than <code>limit</code> strings are
 	 * accepted, null is returned. If <code>limit</code>&lt;0, then this
 	 * methods works like {@link #getFiniteStrings(Automaton)}.
+	 * <p>
+	 * Complexity: efficient on deterministic automata; on nondeterministic automata, 
+	 * the running time may be exponential in the number of states, so consider determinizing first.
 	 */
 	public static Set<String> getFiniteStrings(Automaton a, int limit) {
 		HashSet<String> strings = new HashSet<String>();
 		if (a.isSingleton()) {
-			if (limit > 0)
+			if (limit != 0)
 				strings.add(a.singleton);
 			else
 				return null;
@@ -507,17 +513,17 @@ final public class SpecialOperations {
 	 * <code>limit</code> strings are found. <code>limit</code>&lt;0 means "infinite". 
 	 * */
 	private static boolean getFiniteStrings(State s, HashSet<State> pathstates, HashSet<String> strings, StringBuilder path, int limit) {
+		if (s.accept) {
+			strings.add(path.toString());
+			if (limit >= 0 && strings.size() > limit)
+				return false;
+		}
 		pathstates.add(s);
 		for (Transition t : s.transitions) {
 			if (pathstates.contains(t.to))
 				return false;
 			for (int n = t.min; n <= t.max; n++) {
 				path.append((char)n);
-				if (t.to.accept) {
-					strings.add(path.toString());
-					if (limit >= 0 && strings.size() > limit)
-						return false;
-				}
 				if (!getFiniteStrings(t.to, pathstates, strings, path, limit))
 					return false;
 				path.deleteCharAt(path.length() - 1);
